@@ -21,13 +21,18 @@ OpenPaperCheck lets anyone paste a paper's DOI and see **sourced facts** about w
 10. **The maintainer takes one day off per week.** Burnout is a project risk.
 
 ## 3. Current state
-- **Phase:** Planning complete; starting Week 0 (setup).
-- **Working:** Nothing built yet.
-- **Broken:** n/a
+- **Phase:** Week 0 (M0) complete; Week 1 (Ingest & Snapshot) complete; Week 2 (CLI Polish & PyPI) in progress.
+- **Working:**
+  - Decoupled core library (`openpapercheck.core.doi`, `storage`, `crossref`) with zero database server dependencies.
+  - Sub-millisecond local lookups on SQLite snapshots (empirically benchmarked at 0.05 ms avg / 0.06 ms p95 on 50,000 rows).
+  - Live Crossref client with polite pool `mailto:`, backoff, and 3-tier honest reference categorization (deposited DOIs, unstructured, missing/restricted).
+  - Interactive Typer CLI (`opc check <doi>`, `opc update`, `opc snapshot --sample`, `opc version`) with Rich tree formatting and ethical disclaimers.
+  - Test suite (40 unit, property, golden DOI, and fairness allow-list tests passing).
+  - GitHub CI workflows, pre-commit hooks, issue/PR templates, and ADRs 0001–0003.
 - **Next 3 tasks:**
-  1. Create the repo and commit the doc pack.
-  2. Day-1 verification: download RW CSV, read the repo license; create OpenAlex key; log results below.
-  3. Paper prototype of the review card with 3 testers.
+  1. Build PyPI distribution wheel/sdist via Hatchling (`uv build` or `python -m build`).
+  2. Draft review card paper prototype notes in `docs/research/2026-09-paper-prototype.md`.
+  3. Scaffold Week 3 FastAPI service layer endpoints (`/v1/check/{doi}`, `/v1/health`, `/v1/sources`).
 
 ## 4. Architecture snapshot
 Core package (`openpapercheck`) has zero Postgres/FastAPI dependency: normalizer, Crossref client, stdlib `sqlite3` local lookup, and CLI (`opc check`, `opc update`). Nightly snapshot built from Retraction Watch CSV published to floating `data-latest` tag with `manifest.json`; monthly immutable copy on Zenodo. Server layer (FastAPI + PostgreSQL + Next.js web app) imports core and powers the public web checker (Week 4) and review crowdsourcing queue (Week 5+). Review tasks → 3 independent reviewers → consensus → open dataset (Hugging Face + Zenodo). Details: `MASTER_PLAN.md`, `docs/TECH_STACK.md`, `docs/DATABASE.md`.
