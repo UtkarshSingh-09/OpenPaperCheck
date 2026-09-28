@@ -23,7 +23,7 @@ You do not need to write code to make a massive impact:
 
 ### Quick Start
 ```bash
-git clone https://github.com/openpapercheck/openpapercheck && cd openpapercheck
+git clone https://github.com/UtkarshSingh-09/OpenPaperCheck.git && cd OpenPaperCheck
 cp .env.example .env
 
 # Install Python backend dependencies in virtualenv
@@ -38,7 +38,7 @@ make check
 ## 3. Contribution Workflow
 
 ### Step 1: Pick an Issue
-Look for issues labeled [`good first issue`](https://github.com/openpapercheck/openpapercheck/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) or [`help wanted`](https://github.com/openpapercheck/openpapercheck/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22). Comment on the issue to get assigned before starting work.
+Look for issues labeled [`good first issue`](https://github.com/UtkarshSingh-09/OpenPaperCheck/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) or [`help wanted`](https://github.com/UtkarshSingh-09/OpenPaperCheck/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22). Comment on the issue to get assigned before starting work.
 
 ### Step 2: Branching & Commits
 - Use short-lived feature branches: `feat/<topic>`, `fix/<topic>`, `docs/<topic>`.

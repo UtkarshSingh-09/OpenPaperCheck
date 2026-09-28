@@ -27,7 +27,7 @@ class CrossrefClient:
         self.headers = {
             "User-Agent": (
                 f"OpenPaperCheck/{__version__} "
-                f"(https://github.com/openpapercheck/openpapercheck; mailto:{self.mailto})"
+                f"(https://github.com/UtkarshSingh-09/OpenPaperCheck; mailto:{self.mailto})"
             )
         }
 

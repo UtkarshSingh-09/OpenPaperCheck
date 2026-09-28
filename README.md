@@ -66,7 +66,7 @@ For contributors working on the web application, FastAPI backend, or background 
 
 ```bash
 # Clone the repository
-git clone https://github.com/openpapercheck/openpapercheck && cd openpapercheck
+git clone https://github.com/UtkarshSingh-09/OpenPaperCheck.git && cd OpenPaperCheck
 
 # Configure environment (add your email for Crossref polite pool)
 cp .env.example .env

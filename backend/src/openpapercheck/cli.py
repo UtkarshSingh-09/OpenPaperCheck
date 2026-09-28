@@ -8,6 +8,7 @@ import gzip
 import hashlib
 import json
 import shutil
+from pathlib import Path
 
 import httpx
 import typer
@@ -37,7 +38,7 @@ app = typer.Typer(
 console = Console()
 
 SNAPSHOT_DOWNLOAD_URL = (
-    "https://github.com/openpapercheck/openpapercheck/releases/download/data-latest"
+    "https://github.com/UtkarshSingh-09/OpenPaperCheck/releases/download/data-latest"
 )
 
 
@@ -257,15 +258,36 @@ def check(
     )
 
 
-@app.command(name="snapshot")
-def snapshot_cmd(
-    build: bool = typer.Option(True, "--build", help="Build a snapshot from sample data"),
+snapshot_app = typer.Typer(
+    name="snapshot",
+    help="Build or manage local SQLite snapshots (for developers).",
+    no_args_is_help=False,
+)
+app.add_typer(snapshot_app, name="snapshot")
+
+
+@snapshot_app.callback(invoke_without_command=True)
+def snapshot_default(
+    ctx: typer.Context,
     sample: bool = typer.Option(False, "--sample", help="Use bundled small sample fixture"),
+    csv: Path | None = typer.Option(None, "--csv", help="Path to raw Retraction Watch CSV"),
 ):
     """Build a local SQLite snapshot (for developers)."""
+    if ctx.invoked_subcommand is None:
+        from openpapercheck.ingest.snapshot_builder import build_sqlite_snapshot
+
+        build_sqlite_snapshot(csv_path=csv, use_sample=sample)
+
+
+@snapshot_app.command(name="build")
+def snapshot_build(
+    sample: bool = typer.Option(False, "--sample", help="Use bundled small sample fixture"),
+    csv: Path | None = typer.Option(None, "--csv", help="Path to raw Retraction Watch CSV"),
+):
+    """Compile Retraction Watch data into an indexed SQLite database snapshot."""
     from openpapercheck.ingest.snapshot_builder import build_sqlite_snapshot
 
-    build_sqlite_snapshot(use_sample=sample)
+    build_sqlite_snapshot(csv_path=csv, use_sample=sample)
 
 
 if __name__ == "__main__":
