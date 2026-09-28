@@ -147,3 +147,11 @@ def test_cli_update_command(tmp_path, monkeypatch):
     result_uptodate = runner.invoke(app, ["update"])
     assert result_uptodate.exit_code == 0
     assert "Local snapshot is already up to date" in result_uptodate.stdout
+
+
+def test_cli_ingest_rw(tmp_path, monkeypatch):
+    """Verify opc ingest rw command."""
+    monkeypatch.setenv("OPC_DATA_DIR", str(tmp_path))
+    result = runner.invoke(app, ["ingest", "rw", "--sample"])
+    assert result.exit_code == 0
+    assert "Snapshot successfully built" in result.stdout

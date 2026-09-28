@@ -290,5 +290,24 @@ def snapshot_build(
     build_sqlite_snapshot(csv_path=csv, use_sample=sample)
 
 
+ingest_app = typer.Typer(
+    name="ingest",
+    help="Ingest external scholarly datasets (Retraction Watch, Crossref).",
+    no_args_is_help=True,
+)
+app.add_typer(ingest_app, name="ingest")
+
+
+@ingest_app.command(name="rw")
+def ingest_rw(
+    csv: Path | None = typer.Option(None, "--csv", "-c", help="Path to Retraction Watch CSV"),
+    sample: bool = typer.Option(False, "--sample", "-s", help="Use bundled sample records"),
+):
+    """Ingest Retraction Watch CSV data and build verified local snapshot."""
+    from openpapercheck.ingest.snapshot_builder import build_sqlite_snapshot
+
+    build_sqlite_snapshot(csv_path=csv, use_sample=sample)
+
+
 if __name__ == "__main__":
     app()
