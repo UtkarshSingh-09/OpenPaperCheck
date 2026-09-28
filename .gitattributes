@@ -1,0 +1,19 @@
+# Auto detect text files and perform LF normalization
+* text=auto eol=lf
+
+# Explicit text files
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+Makefile text eol=lf
+
+# Binary files
+*.sqlite binary
+*.sqlite.gz binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary

@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --project backend --all-extras --dev
+
+      - name: Lint and Format Check (Ruff)
+        run: |
+          uv run --project backend ruff check backend/src backend/tests
+          uv run --project backend ruff format --check backend/src backend/tests
+
+      - name: Fairness Deny-list Check
+        run: |
+          echo "Verifying no forbidden columns exist in storage or schemas..."
+          uv run --project backend pytest backend/tests/unit/test_fairness_allowlist.py
+
+      - name: Run Test Suite (Pytest + Coverage)
+        run: |
+          uv run --project backend pytest backend/tests --cov=openpapercheck --cov-report=xml --cov-report=term-missing
+
+      - name: Test Snapshot Compilation & CLI
+        run: |
+          uv run --project backend opc snapshot --sample
+          uv run --project backend opc version

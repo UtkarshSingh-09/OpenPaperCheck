@@ -1,0 +1,64 @@
+name: Nightly Data Snapshot Build
+
+on:
+  schedule:
+    - cron: "40 2 * * *" # Daily at 02:40 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build Retraction Watch SQLite Snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --project backend
+
+      - name: Download Retraction Watch Data
+        run: |
+          mkdir -p data/raw
+          echo "Downloading latest Retraction Watch database CSV..."
+          curl -sSL "https://gitlab.com/crossref/retraction-watch-data/-/raw/main/retraction_watch.csv" -o data/raw/retraction_watch.csv
+          ls -lh data/raw/retraction_watch.csv
+
+      - name: Build SQLite Snapshot
+        run: |
+          uv run --project backend python -m openpapercheck.ingest.snapshot_builder --csv data/raw/retraction_watch.csv
+
+      - name: Verify Snapshot
+        run: |
+          python3 -c "
+          import sqlite3, os
+          path = os.path.expanduser('~/.cache/openpapercheck/retraction_records.sqlite')
+          conn = sqlite3.connect(path)
+          c = conn.cursor()
+          count = c.execute('SELECT COUNT(*) FROM retraction_records').fetchone()[0]
+          print(f'Total records in snapshot: {count}')
+          assert count > 40000, f'Expected >40k records, got {count}'
+          "
+
+      - name: Update Floating Release (data-latest)
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: data-latest
+          name: "OpenPaperCheck Retraction Database Snapshot"
+          body: |
+            Automated daily snapshot of Retraction Watch data compiled into an indexed SQLite archive.
+            All personal attributes (authors, institutions, countries) are strictly removed at ingest.
+          files: |
+            ~/.cache/openpapercheck/retraction_records.sqlite.gz
+            ~/.cache/openpapercheck/manifest.json

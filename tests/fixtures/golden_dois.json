@@ -1,0 +1,40 @@
+[
+  {
+    "doi": "10.1038/nature12373",
+    "expected_state": "no_flags_found",
+    "title": "A high-precision carbon dioxide sensor",
+    "is_retracted": false,
+    "source_url": "https://doi.org/10.1038/nature12373"
+  },
+  {
+    "doi": "10.1016/j.cell.2020.08.020",
+    "expected_state": "no_flags_found",
+    "title": "Cryo-EM structure of the SARS-CoV-2 spike glycoprotein",
+    "is_retracted": false,
+    "source_url": "https://doi.org/10.1016/j.cell.2020.08.020"
+  },
+  {
+    "doi": "10.1016/s0140-6736(97)11096-0",
+    "expected_state": "retracted_external",
+    "title": "Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children",
+    "is_retracted": true,
+    "reasons": ["Falsification/Fabrication of Data", "Ethical Violations"],
+    "source_url": "https://doi.org/10.1016/s0140-6736(97)11096-0"
+  },
+  {
+    "doi": "10.1126/science.1105458",
+    "expected_state": "retracted_external",
+    "title": "Patient-Specific Embryonic Stem Cells Derived from Human SCNT Blastocysts",
+    "is_retracted": true,
+    "reasons": ["Fabrication of Data", "Unreliable Results"],
+    "source_url": "https://doi.org/10.1126/science.1105458"
+  },
+  {
+    "doi": "10.1038/nature04473",
+    "expected_state": "retracted_external",
+    "title": "Pluripotency of stem cells from adult mouse testis",
+    "is_retracted": true,
+    "reasons": ["Unreliable Results"],
+    "source_url": "https://doi.org/10.1038/nature04473"
+  }
+]
