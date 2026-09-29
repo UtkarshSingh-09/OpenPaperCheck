@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "openpapercheck"
-version = "0.1.0.dev0"
+version = "0.1.0.dev1"
 description = "Fast, honest scholarly retraction and reference integrity checker with verified open labels."
 readme = "README.md"
 license = "Apache-2.0"
