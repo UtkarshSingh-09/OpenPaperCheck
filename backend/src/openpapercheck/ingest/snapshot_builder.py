@@ -33,6 +33,34 @@ ALLOW_LISTED_COLS = {
 }
 
 
+def normalize_date(date_str: str | None) -> str | None:
+    """Normalize raw dates (e.g. '2/9/2024 0:00' or '2010-02-06') to ISO 'YYYY-MM-DD'."""
+    if not date_str or not isinstance(date_str, str):
+        return None
+    cleaned = date_str.strip()
+    if not cleaned or cleaned.lower() == "null" or cleaned.lower() == "none":
+        return None
+    # Strip time part if present
+    date_part = cleaned.split()[0]
+    if "/" in date_part:
+        parts = date_part.split("/")
+        if len(parts) == 3:
+            try:
+                m, d, y = int(parts[0]), int(parts[1]), int(parts[2])
+                return f"{y:04d}-{m:02d}-{d:02d}"
+            except ValueError:
+                pass
+    elif "-" in date_part:
+        parts = date_part.split("-")
+        if len(parts) == 3:
+            try:
+                y, m, d = int(parts[0]), int(parts[1]), int(parts[2])
+                return f"{y:04d}-{m:02d}-{d:02d}"
+            except ValueError:
+                pass
+    return date_part
+
+
 def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False) -> Path:
     """
     Compile Retraction Watch data into an indexed SQLite database.
@@ -43,7 +71,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
     - ~/.cache/openpapercheck/manifest.json
     """
     data_dir = get_data_dir()
-    db_path = SNAPSHOT_FILE
+    db_path = get_data_dir() / "retraction_records.sqlite"
     gz_path = data_dir / "retraction_records.sqlite.gz"
 
     if db_path.is_file():
@@ -120,9 +148,59 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                 "10.1038/s41586-020-2258-0",
                 "Retraction",
                 "Data Manipulation",
-                "2020-04-09",
-                "2020-01-15",
+                "2022-09-26",
+                "2020-03-12",
                 "https://www.nature.com/articles/s41586-020-2258-0",
+            ),
+            (
+                1005,
+                "10.1016/s0140-6736(20)31180-6",
+                "10.1016/s0140-6736(20)31324-6",
+                "Retraction",
+                "Unreliable Data; Author Unresponsive",
+                "2020-06-05",
+                "2020-05-22",
+                "https://doi.org/10.1016/s0140-6736(20)31324-6",
+            ),
+            (
+                1006,
+                "10.1056/nejmoa2007621",
+                "10.1056/nejmc2021225",
+                "Retraction",
+                "Unreliable Data; Concerns/Issues About Data",
+                "2020-06-04",
+                "2020-05-01",
+                "https://doi.org/10.1056/nejmc2021225",
+            ),
+            (
+                1007,
+                "10.1038/s41467-020-20588-0",
+                "10.1038/s41467-026-72902-1",
+                "Retraction",
+                "Concerns/Issues about Data; Unreliable Results and/or Conclusions",
+                "2026-06-24",
+                "2021-01-12",
+                "https://doi.org/10.1038/s41467-026-72902-1",
+            ),
+            (
+                1008,
+                "10.1038/srep35986",
+                "10.1038/srep72901",
+                "Retraction",
+                "Concerns/Issues about Image; Duplication of Image",
+                "2026-08-25",
+                "2016-10-26",
+                "https://doi.org/10.1038/srep72901",
+            ),
+            (
+                1009,
+                "10.1038/s41586-024-07219-0",
+                "10.1038/s41586-025-72836-9",
+                "Retraction",
+                "Concerns/Issues about Data; Error in Analyses",
+                "2025-12-03",
+                "2024-04-17",
+                "https://doi.org/10.1038/s41586-025-72836-9",
             ),
         ]
         cursor.executemany(
@@ -155,8 +233,8 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                         ret_doi,
                         row.get("RetractionNature") or "Retraction",
                         row.get("Reason", ""),
-                        row.get("RetractionDate", ""),
-                        row.get("OriginalPaperDate", ""),
+                        normalize_date(row.get("RetractionDate")) or "",
+                        normalize_date(row.get("OriginalPaperDate")) or "",
                         row.get("URLS", ""),
                     )
                 )
@@ -207,7 +285,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
         "file_size_bytes": gz_path.stat().st_size,
     }
 
-    with open(MANIFEST_FILE, "w", encoding="utf-8") as f:
+    with open(data_dir / "manifest.json", "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
     console.print(

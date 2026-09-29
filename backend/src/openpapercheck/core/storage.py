@@ -14,15 +14,27 @@ from typing import Any
 
 from openpapercheck.core.doi import normalize_doi
 
+def get_data_dir() -> Path:
+    """Return data directory, creating it if necessary."""
+    data_dir = Path(os.environ.get("OPC_DATA_DIR") or Path.home() / ".cache" / "openpapercheck")
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return data_dir
+
+
+def get_snapshot_file() -> Path:
+    """Return path to snapshot file in data directory."""
+    return get_data_dir() / "retraction_records.sqlite"
+
+
+def get_manifest_file() -> Path:
+    """Return path to manifest file in data directory."""
+    return get_data_dir() / "manifest.json"
+
+
+# Backwards compatibility aliases
 DEFAULT_DIR = Path(os.environ.get("OPC_DATA_DIR") or Path.home() / ".cache" / "openpapercheck")
 SNAPSHOT_FILE = DEFAULT_DIR / "retraction_records.sqlite"
 MANIFEST_FILE = DEFAULT_DIR / "manifest.json"
-
-
-def get_data_dir() -> Path:
-    """Return data directory, creating it if necessary."""
-    DEFAULT_DIR.mkdir(parents=True, exist_ok=True)
-    return DEFAULT_DIR
 
 
 def init_schema(conn: sqlite3.Connection) -> None:
@@ -59,9 +71,9 @@ def get_snapshot_path() -> Path:
     """Return path to local SQLite snapshot."""
     # Check if local development snapshot exists first
     local_dev = Path("data/snapshots/retraction_records.sqlite")
-    if local_dev.is_file():
+    if local_dev.is_file() and not os.environ.get("OPC_DATA_DIR"):
         return local_dev
-    return SNAPSHOT_FILE
+    return get_snapshot_file()
 
 
 def has_snapshot() -> bool:
@@ -71,10 +83,11 @@ def has_snapshot() -> bool:
 
 def get_manifest() -> dict[str, Any] | None:
     """Load the current snapshot manifest if available."""
-    if not MANIFEST_FILE.is_file():
+    manifest_path = get_manifest_file()
+    if not manifest_path.is_file():
         return None
     try:
-        with open(MANIFEST_FILE, encoding="utf-8") as f:
+        with open(manifest_path, encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return None

@@ -1,40 +1,137 @@
 [
   {
+    "doi": "10.1016/s0140-6736(97)11096-0",
+    "expected_state": "retracted_external",
+    "title": "Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children",
+    "is_retracted": true,
+    "reasons": ["Falsification/Fabrication of Data", "Ethical Violations", "Error in Results and/or Conclusions"],
+    "source_url": "https://doi.org/10.1016/s0140-6736(97)11096-0"
+  },
+  {
+    "doi": "10.1016/s0140-6736(20)31180-6",
+    "expected_state": "retracted_external",
+    "title": "RETRACTED: Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19",
+    "is_retracted": true,
+    "reasons": ["Unreliable Data", "Author Unresponsive", "Concerns/Issues about Data"],
+    "source_url": "https://doi.org/10.1016/s0140-6736(20)31180-6"
+  },
+  {
+    "doi": "10.1056/nejmoa2007621",
+    "expected_state": "retracted_external",
+    "title": "RETRACTED: Cardiovascular Disease, Drug Therapy, and Mortality in COVID-19",
+    "is_retracted": true,
+    "reasons": ["Unreliable Data", "Concerns/Issues about Data"],
+    "source_url": "https://doi.org/10.1056/nejmoa2007621"
+  },
+  {
+    "doi": "10.1038/s41467-020-20588-0",
+    "expected_state": "retracted_external",
+    "title": "Carbon nano-onion-mediated dual targeting of P-selectin and P-glycoprotein to overcome cancer drug resistance",
+    "is_retracted": true,
+    "reasons": ["Concerns/Issues about Data", "Unreliable Results and/or Conclusions"],
+    "source_url": "https://doi.org/10.1038/s41467-020-20588-0"
+  },
+  {
+    "doi": "10.1038/srep35986",
+    "expected_state": "retracted_external",
+    "title": "Functional kinomics establishes a critical node of volume-sensitive cation-Cl− cotransporter regulation in the mammalian brain",
+    "is_retracted": true,
+    "reasons": ["Concerns/Issues about Image", "Duplication of Image"],
+    "source_url": "https://doi.org/10.1038/srep35986"
+  },
+  {
+    "doi": "10.1038/s41586-024-07219-0",
+    "expected_state": "retracted_external",
+    "title": "RETRACTED ARTICLE: Control of electron–phonon coupling in graphene via a dielectric interface",
+    "is_retracted": true,
+    "reasons": ["Concerns/Issues about Data", "Error in Analyses"],
+    "source_url": "https://doi.org/10.1038/s41586-024-07219-0"
+  },
+  {
+    "doi": "10.1146/annurev-publhealth-090419-102240",
+    "expected_state": "needs_review",
+    "title": "Vaccine Hesitancy, Acceptance, and Anti-Vaccine Movements",
+    "is_retracted": false,
+    "timing_scenario": "cited_after_retraction",
+    "source_url": "https://doi.org/10.1146/annurev-publhealth-090419-102240"
+  },
+  {
+    "doi": "10.1016/j.socscimed.2019.112552",
+    "expected_state": "needs_review",
+    "title": "Systematic Literature Review on the Spread of Health-related Misinformation on Social Media",
+    "is_retracted": false,
+    "timing_scenario": "cited_after_retraction",
+    "source_url": "https://doi.org/10.1016/j.socscimed.2019.112552"
+  },
+  {
+    "doi": "10.1056/nejmoa021134",
+    "expected_state": "needs_review",
+    "title": "A Population-Based Study of Measles, Mumps, and Rubella Vaccination and Autism",
+    "is_retracted": false,
+    "timing_scenario": "cited_before_retraction",
+    "source_url": "https://doi.org/10.1056/nejmoa021134"
+  },
+  {
     "doi": "10.1038/nature12373",
     "expected_state": "no_flags_found",
-    "title": "A high-precision carbon dioxide sensor",
+    "title": "Nanometre-scale thermometry in a living cell",
     "is_retracted": false,
     "source_url": "https://doi.org/10.1038/nature12373"
   },
   {
     "doi": "10.1016/j.cell.2020.08.020",
     "expected_state": "no_flags_found",
-    "title": "Cryo-EM structure of the SARS-CoV-2 spike glycoprotein",
+    "title": "Patrolling Alveolar Macrophages Conceal the Epithelial Infection Site",
     "is_retracted": false,
     "source_url": "https://doi.org/10.1016/j.cell.2020.08.020"
   },
   {
-    "doi": "10.1016/s0140-6736(97)11096-0",
-    "expected_state": "retracted_external",
-    "title": "Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children",
-    "is_retracted": true,
-    "reasons": ["Falsification/Fabrication of Data", "Ethical Violations"],
-    "source_url": "https://doi.org/10.1016/s0140-6736(97)11096-0"
+    "doi": "10.1103/physrevlett.116.061102",
+    "expected_state": "no_flags_found",
+    "title": "Observation of Gravitational Waves from a Binary Black Hole Merger",
+    "is_retracted": false,
+    "source_url": "https://doi.org/10.1103/physrevlett.116.061102"
   },
   {
-    "doi": "10.1126/science.1105458",
-    "expected_state": "retracted_external",
-    "title": "Patient-Specific Embryonic Stem Cells Derived from Human SCNT Blastocysts",
-    "is_retracted": true,
-    "reasons": ["Fabrication of Data", "Unreliable Results"],
-    "source_url": "https://doi.org/10.1126/science.1105458"
+    "doi": "10.1038/nature02168",
+    "expected_state": "no_flags_found",
+    "title": "The International HapMap Project",
+    "is_retracted": false,
+    "source_url": "https://doi.org/10.1038/nature02168"
   },
   {
-    "doi": "10.1038/nature04473",
-    "expected_state": "retracted_external",
-    "title": "Pluripotency of stem cells from adult mouse testis",
-    "is_retracted": true,
-    "reasons": ["Unreliable Results"],
-    "source_url": "https://doi.org/10.1038/nature04473"
+    "doi": "10.1073/pnas.1906556116",
+    "expected_state": "no_flags_found",
+    "title": "A 40-y record reveals gradual Antarctic ozone recovery",
+    "is_retracted": false,
+    "source_url": "https://doi.org/10.1073/pnas.1906556116"
+  },
+  {
+    "doi": "10.1038/s41586-020-2649-2",
+    "expected_state": "no_flags_found",
+    "title": "Array programming with NumPy",
+    "is_retracted": false,
+    "source_url": "https://doi.org/10.1038/s41586-020-2649-2"
+  },
+  {
+    "doi": "10.1038/nature06990",
+    "expected_state": "no_flags_found",
+    "title": "Simultaneous teleseismic and geodetic observations of the 2008 Wenchuan earthquake",
+    "is_retracted": false,
+    "source_url": "https://doi.org/10.1038/nature06990"
+  },
+  {
+    "doi": "10.1038/543153a",
+    "expected_state": "insufficient_data",
+    "title": "Insects inspire crash-proof drone",
+    "is_retracted": false,
+    "source_url": "https://doi.org/10.1038/543153a"
+  },
+  {
+    "doi": "10.1038/475141a",
+    "expected_state": "insufficient_data",
+    "title": "The dubious benefits of broader impact",
+    "is_retracted": false,
+    "source_url": "https://doi.org/10.1038/475141a"
   }
 ]
