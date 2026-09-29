@@ -316,6 +316,8 @@ def check(
             if r_doi in retracted_refs_map:
                 ret_info = retracted_refs_map[r_doi]
                 ret_date = ret_info.get("retraction_date") or "date unknown"
+                nature = ret_info.get("nature") or "Retraction"
+                nature_label = "Retracted" if nature.lower() == "retraction" else nature
                 # Check if cited before or after retraction
                 timing = evaluate_citation_timing(pub_date, ret_date)
                 timing_note = ""
@@ -326,7 +328,7 @@ def check(
 
                 reasons_str = f" — {', '.join(ret_info['reasons'])}" if ret_info["reasons"] else ""
                 retracted_branch.add(
-                    f"#{r['position']} [underline]{r_doi}[/underline] (Retracted: {ret_date}) {timing_note}{reasons_str}"
+                    f"#{r['position']} [underline]{r_doi}[/underline] ({nature_label}: {ret_date}) {timing_note}{reasons_str}"
                 )
 
     # Tier 2: Unstructured / Without DOIs

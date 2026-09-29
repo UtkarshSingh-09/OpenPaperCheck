@@ -18,7 +18,7 @@ from openpapercheck.core.models import (
     determine_paper_state,
     evaluate_citation_timing,
 )
-from openpapercheck.core.storage import get_retraction, init_schema
+from openpapercheck.core.storage import check_reference_dois, get_retraction, init_schema
 from openpapercheck.ingest.snapshot_builder import build_sqlite_snapshot
 
 runner = CliRunner()
@@ -226,6 +226,95 @@ def test_multi_reference_mixed_timing():
 
     assert timing_ref_a == CitationTiming.CITED_AFTER_RETRACTION
     assert timing_ref_b == CitationTiming.CITED_BEFORE_RETRACTION
+
+
+def test_eoc_only_reference_policy_enforcement(tmp_path: Path):
+    """
+    Verify ADR-0004 policy enforcement in code for Expression of Concern (EOC):
+    1. Reference with ONLY an Expression of Concern is recognized and triggers NEEDS_REVIEW.
+    2. get_retraction() and check_reference_dois() return nature='Expression of concern'.
+    3. When a subsequent formal Retraction notice is deposited, storage query automatically
+       upgrades to nature='Retraction' and anchors to the full retraction date.
+    """
+    db_path = tmp_path / "eoc_policy.sqlite"
+    conn = sqlite3.connect(db_path)
+    init_schema(conn)
+    c = conn.cursor()
+
+    eoc_doi = "10.1000/eoc-flagged-work"
+    # Phase 1: Only an Expression of Concern exists
+    c.execute(
+        """
+        INSERT INTO retraction_records (
+            rw_record_id, original_doi, retraction_doi, nature,
+            reasons, retraction_date, original_date, notice_urls
+        ) VALUES (
+            9001, ?, '10.1000/eoc-notice', 'Expression of concern',
+            'Concerns/Issues About Data', '2019-04-10', '2017-01-01', 'https://example.com/eoc'
+        )
+        """,
+        (eoc_doi,),
+    )
+    conn.commit()
+
+    # 1. Verify EOC-only lookup
+    rec = get_retraction(eoc_doi, db_path=db_path)
+    assert rec is not None
+    assert rec["rw_record_id"] == 9001
+    assert rec["nature"] == "Expression of concern"
+    assert rec["retraction_date"] == "2019-04-10"
+
+    batch = check_reference_dois([eoc_doi], db_path=db_path)
+    assert eoc_doi in batch
+    assert batch[eoc_doi]["nature"] == "Expression of concern"
+
+    # 2. Citing paper state: citing an EOC-only paper MUST trigger NEEDS_REVIEW
+    state = determine_paper_state(
+        paper_retraction=None,
+        references_data={"deposit_status": "deposited"},
+        retracted_refs_map=batch,
+    )
+    assert state == PaperPublicState.NEEDS_REVIEW
+
+    # 3. Citation timing relative to EOC notice date
+    # Paper published in 2021 (after EOC)
+    assert evaluate_citation_timing("2021-01-01", rec["retraction_date"]) == CitationTiming.CITED_AFTER_RETRACTION
+    # Paper published in 2018 (before EOC)
+    assert evaluate_citation_timing("2018-01-01", rec["retraction_date"]) == CitationTiming.CITED_BEFORE_RETRACTION
+
+    # Phase 2: Later, the publisher issues a full formal Retraction (2022-08-15)
+    c.execute(
+        """
+        INSERT INTO retraction_records (
+            rw_record_id, original_doi, retraction_doi, nature,
+            reasons, retraction_date, original_date, notice_urls
+        ) VALUES (
+            9002, ?, '10.1000/ret-notice', 'Retraction',
+            'Falsification of Data; Upgrade/Update of Prior Notice(s)', '2022-08-15', '2017-01-01', 'https://example.com/ret'
+        )
+        """,
+        (eoc_doi,),
+    )
+    conn.commit()
+    conn.close()
+
+    # 4. Verify ADR-0004 code enforcement: Retraction takes precedence over EOC
+    upgraded_rec = get_retraction(eoc_doi, db_path=db_path)
+    assert upgraded_rec is not None
+    assert upgraded_rec["rw_record_id"] == 9002
+    assert upgraded_rec["nature"] == "Retraction"
+    assert upgraded_rec["retraction_date"] == "2022-08-15"
+
+    upgraded_batch = check_reference_dois([eoc_doi], db_path=db_path)
+    assert upgraded_batch[eoc_doi]["nature"] == "Retraction"
+    assert upgraded_batch[eoc_doi]["retraction_date"] == "2022-08-15"
+
+    # 5. Authoritative anchor shifts to formal Retraction date:
+    # A paper published in 2020-05-01 was published AFTER the 2019 EOC,
+    # but BEFORE the formal 2022 Retraction.
+    # Per ADR-0004, the authoritative anchor is now 2022-08-15 (CITED_BEFORE_RETRACTION).
+    timing_2020 = evaluate_citation_timing("2020-05-01", upgraded_rec["retraction_date"])
+    assert timing_2020 == CitationTiming.CITED_BEFORE_RETRACTION
 
 
 def test_eval_golden_cli(tmp_path: Path, monkeypatch):
