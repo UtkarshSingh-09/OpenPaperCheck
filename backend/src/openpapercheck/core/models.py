@@ -49,3 +49,55 @@ def determine_paper_state(
         return PaperPublicState.INSUFFICIENT_DATA
 
     return PaperPublicState.NO_FLAGS_FOUND
+
+
+class CitationTiming(str, Enum):
+    """
+    Per-reference timing classification.
+    Determined per-flagged reference rather than at the paper level,
+    to prevent invalid state collapse when a paper cites multiple
+    retracted references with conflicting timelines.
+    """
+
+    CITED_AFTER_RETRACTION = "cited_after_retraction"
+    CITED_BEFORE_RETRACTION = "cited_before_retraction"
+    UNKNOWN = "unknown"
+
+
+def evaluate_citation_timing(
+    pub_date: str | None,
+    retraction_date: str | None,
+) -> CitationTiming:
+    """
+    Evaluate the citation timing for an individual reference.
+
+    Args:
+        pub_date: ISO date or partial date of citing paper (e.g. '2021-06-25', '2007-03-01', '2015')
+        retraction_date: ISO date of retraction notice (e.g. '2010-02-06')
+
+    Returns:
+        CitationTiming: CITED_AFTER_RETRACTION, CITED_BEFORE_RETRACTION, or UNKNOWN
+    """
+    if not pub_date or not retraction_date or retraction_date.strip().lower() in ("date unknown", "unknown", ""):
+        return CitationTiming.UNKNOWN
+
+    clean_pub = pub_date.strip()
+    clean_ret = retraction_date.strip()
+
+    # Compare up to the shared precision length (e.g. YYYY vs YYYY or YYYY-MM vs YYYY-MM)
+    # If comparing full ISO dates YYYY-MM-DD
+    if len(clean_pub) >= 10 and len(clean_ret) >= 10:
+        if clean_pub[:10] > clean_ret[:10]:
+            return CitationTiming.CITED_AFTER_RETRACTION
+        return CitationTiming.CITED_BEFORE_RETRACTION
+
+    # Partial date comparison (e.g. year-only '2021' vs '2020-06-05')
+    comp_len = min(len(clean_pub), len(clean_ret), 10)
+    if clean_pub[:comp_len] > clean_ret[:comp_len]:
+        return CitationTiming.CITED_AFTER_RETRACTION
+    elif clean_pub[:comp_len] < clean_ret[:comp_len]:
+        return CitationTiming.CITED_BEFORE_RETRACTION
+
+    # If prefixes match (e.g. both start with '2020'), but one is more specific,
+    # default to before retraction to prevent falsely accusing authors without full day proof
+    return CitationTiming.CITED_BEFORE_RETRACTION

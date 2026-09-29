@@ -22,7 +22,12 @@ from rich.tree import Tree
 from openpapercheck import __version__
 from openpapercheck.core.crossref import CrossrefClient
 from openpapercheck.core.doi import normalize_doi
-from openpapercheck.core.models import PaperPublicState, determine_paper_state
+from openpapercheck.core.models import (
+    CitationTiming,
+    PaperPublicState,
+    determine_paper_state,
+    evaluate_citation_timing,
+)
 from openpapercheck.core.storage import (
     MANIFEST_FILE,
     SNAPSHOT_FILE,
@@ -312,12 +317,12 @@ def check(
                 ret_info = retracted_refs_map[r_doi]
                 ret_date = ret_info.get("retraction_date") or "date unknown"
                 # Check if cited before or after retraction
+                timing = evaluate_citation_timing(pub_date, ret_date)
                 timing_note = ""
-                if pub_date and ret_date != "date unknown":
-                    if pub_date > ret_date:
-                        timing_note = "[bold red](Cited AFTER retraction)[/bold red]"
-                    else:
-                        timing_note = "[cyan](Cited BEFORE retraction occurred)[/cyan]"
+                if timing == CitationTiming.CITED_AFTER_RETRACTION:
+                    timing_note = "[bold red](Cited AFTER retraction)[/bold red]"
+                elif timing == CitationTiming.CITED_BEFORE_RETRACTION:
+                    timing_note = "[cyan](Cited BEFORE retraction occurred)[/cyan]"
 
                 reasons_str = f" — {', '.join(ret_info['reasons'])}" if ret_info["reasons"] else ""
                 retracted_branch.add(
@@ -426,15 +431,13 @@ def eval_golden(
 
                 # Check timing scenario if applicable
                 pub_date = work.get("publication_date")
+                timing_note = ""
                 for r in refs_meta.get("with_doi", []):
                     r_doi = r["doi"]
                     if r_doi in ret_refs:
                         ret_date = ret_refs[r_doi].get("retraction_date")
-                        if pub_date and ret_date:
-                            if pub_date > ret_date:
-                                timing_note = "Cited AFTER retraction"
-                            else:
-                                timing_note = "Cited BEFORE retraction"
+                        timing = evaluate_citation_timing(pub_date, ret_date)
+                        timing_note = timing.value
             else:
                 actual_state = (
                     PaperPublicState.RETRACTED_EXTERNAL
@@ -446,10 +449,7 @@ def eval_golden(
             state_match = actual_state.value == expected
             timing_match = True
             if expected_scenario:
-                if expected_scenario == "cited_after_retraction":
-                    timing_match = timing_note == "Cited AFTER retraction"
-                elif expected_scenario == "cited_before_retraction":
-                    timing_match = timing_note == "Cited BEFORE retraction"
+                timing_match = timing_note == expected_scenario
 
             if state_match and timing_match:
                 status_str = "[bold green]PASS[/bold green]"

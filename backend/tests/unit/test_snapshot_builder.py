@@ -57,6 +57,9 @@ def test_normalize_date_edge_cases():
     assert normalize_date("NULL") is None
     assert normalize_date("None") is None
     assert normalize_date("unknown") == "unknown"
+    # Malformed non-numeric date components (ValueError paths)
+    assert normalize_date("aa/bb/cccc") == "aa/bb/cccc"
+    assert normalize_date("yyyy-mm-dd") == "yyyy-mm-dd"
 
 
 # --- CSV Ingestion & Allow-List Tests ---
@@ -206,3 +209,44 @@ def test_build_sqlite_snapshot_from_csv(tmp_path: Path, monkeypatch):
     with gzip.open(gz_file, "rb") as f_in:
         decompressed = f_in.read(100)
     assert decompressed.startswith(b"SQLite format 3")
+
+
+def test_snapshot_builder_batch_flush(tmp_path: Path, monkeypatch):
+    """Verify that snapshot builder flushes batches exceeding 5000 rows."""
+    monkeypatch.setenv("OPC_DATA_DIR", str(tmp_path))
+
+    large_csv = tmp_path / "large_raw.csv"
+    headers = [
+        "Record ID",
+        "OriginalPaperDOI",
+        "RetractionDOI",
+        "RetractionNature",
+        "Reason",
+        "RetractionDate",
+        "OriginalPaperDate",
+        "URLS",
+    ]
+    with open(large_csv, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(headers)
+        for i in range(5005):
+            writer.writerow([
+                i + 1,
+                f"10.1000/batch-doi-{i}",
+                f"10.1000/ret-doi-{i}",
+                "Retraction",
+                "Falsification of Data",
+                "2020-01-01",
+                "2018-01-01",
+                "https://example.com/notice",
+            ])
+
+    sqlite_path = build_sqlite_snapshot(csv_path=large_csv)
+    assert sqlite_path.is_file()
+
+    conn = sqlite3.connect(sqlite_path)
+    c = conn.cursor()
+    c.execute("SELECT count(*) FROM retraction_records;")
+    count = c.fetchone()[0]
+    conn.close()
+    assert count == 5005

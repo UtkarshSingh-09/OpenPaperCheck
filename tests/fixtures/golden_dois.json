@@ -72,6 +72,15 @@
     "source_url": "https://doi.org/10.1056/nejmoa021134"
   },
   {
+    "doi": "10.1111/j.1467-9566.2007.00544.x",
+    "expected_state": "needs_review",
+    "title": "‘Trusting blindly can be the biggest risk of all’: organised resistance to childhood vaccination in the UK",
+    "is_retracted": false,
+    "timing_scenario": "cited_before_retraction",
+    "boundary_case": "wakefield_2004_to_2010_window",
+    "source_url": "https://doi.org/10.1111/j.1467-9566.2007.00544.x"
+  },
+  {
     "doi": "10.1038/nature12373",
     "expected_state": "no_flags_found",
     "title": "Nanometre-scale thermometry in a living cell",

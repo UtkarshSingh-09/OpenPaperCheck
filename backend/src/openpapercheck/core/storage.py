@@ -128,6 +128,15 @@ def get_retraction(doi: str, db_path: Path | None = None) -> dict[str, Any] | No
                        retraction_date, original_date, notice_urls
                 FROM retraction_records
                 WHERE lower(original_doi) = ?
+                ORDER BY 
+                    CASE nature
+                        WHEN 'Retraction' THEN 1
+                        WHEN 'Expression of concern' THEN 2
+                        WHEN 'Correction' THEN 3
+                        WHEN 'Reinstatement' THEN 4
+                        ELSE 5
+                    END,
+                    retraction_date DESC
                 LIMIT 1
                 """,
                 (canonical,),
@@ -163,6 +172,7 @@ def check_reference_dois(dois: list[str], db_path: Path | None = None) -> dict[s
 
     Returns:
         Mapping of {doi: retraction_info} for DOIs that have retractions recorded.
+        Prioritizes full 'Retraction' notices over earlier 'Correction' or 'Expression of concern'.
     """
     cleaned_dois = [normalize_doi(d) for d in dois if d]
     valid_dois = [d for d in cleaned_dois if d is not None]
@@ -183,10 +193,21 @@ def check_reference_dois(dois: list[str], db_path: Path | None = None) -> dict[s
                            retraction_date, original_date
                     FROM retraction_records
                     WHERE lower(original_doi) IN ({placeholders})
+                    ORDER BY 
+                        CASE nature
+                            WHEN 'Retraction' THEN 1
+                            WHEN 'Expression of concern' THEN 2
+                            WHEN 'Correction' THEN 3
+                            WHEN 'Reinstatement' THEN 4
+                            ELSE 5
+                        END,
+                        retraction_date DESC
                 """
                 cursor.execute(query, chunk)
                 for row in cursor.fetchall():
                     doi_key = row["original_doi"].lower()
+                    if doi_key in retracted:
+                        continue  # Already captured higher-priority notice
                     reasons_raw = row["reasons"]
                     reasons_list = (
                         [r.strip() for r in reasons_raw.split(";") if r.strip()]
