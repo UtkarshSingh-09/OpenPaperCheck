@@ -36,21 +36,26 @@ opc check 10.1038/nature12373
 ### Example Terminal Output
 
 ```text
-$ opc check 10.1016/s0140-6736(97)11096-0
+$ opc check "10.1016/s0140-6736(97)11096-0"
 
 ╭──────────────────── Paper: 10.1016/s0140-6736(97)11096-0 ────────────────────╮
 │ RETRACTED: Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and     │
 │ pervasive developmental disorder in children                                 │
 │ The Lancet • Published: 1998-02-01                                           │
 │                                                                              │
-│  RETRACTED  according to Retraction Watch (Record #1001, 2010-02-06)         │
-│ Reasons: Falsification/Fabrication of Data, Ethical Violations               │
+│  RETRACTED EXTERNAL                                                          │
+│  RETRACTED  according to Retraction Watch (Record #4036, 2010-02-06)         │
+│ Reasons: Falsification/Fabrication of Data, Investigation by                 │
+│ Company/Institution, Investigation by Third Party, Lack of Approval from     │
+│ Company/Institution, Lack of IRB/IACUC Approval and/or Compliance,           │
+│ Manipulation of Results, Upgrade/Update of Prior Notice(s)                   │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 References (26 total listed):
 ├── ✓ 16 checked via deposited DOIs
 │   └── 16 no flags recorded in Retraction Watch
 └── ℹ 10 without DOIs (Unstructured text; could not be checked offline)
 
+Data as of: 2026-09-29 (72,718 records) • Sources: Crossref API, Retraction Watch
 Disclaimer: This tool reports external facts. Absence of a flag is not endorsement. Every claim links to an authority.
 ```
 
