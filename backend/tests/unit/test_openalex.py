@@ -62,3 +62,18 @@ def test_openalex_get_work_network_error():
     # Should not raise exception, but return None gracefully
     work = client.get_work(doi)
     assert work is None
+
+
+@respx.mock
+def test_openalex_get_work_quota_exceeded():
+    """Verify OpenAlex client handles HTTP 429 quota exhaustion gracefully."""
+    client = OpenAlexClient(api_key="exhausted-key")
+    doi = "10.1000/some-doi"
+
+    respx.get(f"https://api.openalex.org/works/https://doi.org/{doi}").respond(
+        status_code=429, json={"error": "Daily quota exceeded", "message": "API key daily limit reached"}
+    )
+
+    work = client.get_work(doi)
+    assert work is None
+

@@ -91,3 +91,40 @@ def test_crossref_client_404_returns_none():
 
     client = CrossrefClient()
     assert client.get_work(doi) is None
+
+
+@respx.mock
+def test_crossref_client_polite_pool_headers():
+    """Verify mailto is properly set in User-Agent and query params for Crossref polite pool."""
+    client = CrossrefClient(mailto="researcher@university.edu")
+    doi = "10.1038/nature12373"
+
+    route = respx.get(f"https://api.crossref.org/works/{doi}").respond(
+        status_code=200, json={"status": "ok", "message": {"title": ["Test"]}}
+    )
+
+    work = client.get_work(doi)
+    assert work is not None
+    assert route.called
+    request = route.calls.last.request
+    assert "researcher@university.edu" in request.headers["User-Agent"]
+    assert "mailto=researcher%40university.edu" in str(request.url)
+
+
+@respx.mock
+def test_crossref_client_handles_rate_limiting_429():
+    """Verify Crossref client raises HTTPStatusError when encountering HTTP 429 rate limit."""
+    import pytest
+    import httpx
+
+    client = CrossrefClient()
+    doi = "10.1038/rate-limited"
+
+    respx.get(f"https://api.crossref.org/works/{doi}").respond(
+        status_code=429, headers={"Retry-After": "2"}
+    )
+
+    with pytest.raises(httpx.HTTPStatusError) as exc_info:
+        client.get_work(doi)
+    assert exc_info.value.response.status_code == 429
+

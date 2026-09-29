@@ -467,3 +467,47 @@ def test_cli_check_reinstatement_not_flagged(tmp_path, monkeypatch):
     assert "RETRACTED" not in res_target.stdout
     assert "Reinstatement" in res_target.stdout
 
+
+def test_opc_ingest_rw_idempotency(tmp_path, monkeypatch):
+    """
+    Verify DoD Requirement: 'Full RW ingest idempotent'.
+    Running opc ingest rw repeatedly must produce identical row counts,
+    prevent duplicate rows, enforce primary key uniqueness, and yield identical checksums.
+    """
+    import sqlite3
+    monkeypatch.setenv("OPC_DATA_DIR", str(tmp_path))
+
+    # Run 1: Initial ingest
+    res1 = runner.invoke(app, ["ingest", "rw", "--sample"])
+    assert res1.exit_code == 0
+    assert "Snapshot successfully built" in res1.stdout
+
+    db_path = tmp_path / "retraction_records.sqlite"
+    manifest_path = tmp_path / "manifest.json"
+    assert db_path.is_file()
+    assert manifest_path.is_file()
+
+    with sqlite3.connect(db_path) as conn:
+        count_1 = conn.execute("SELECT count(*) FROM retraction_records").fetchone()[0]
+        distinct_ids_1 = conn.execute("SELECT count(DISTINCT rw_record_id) FROM retraction_records").fetchone()[0]
+
+    manifest_1 = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    # Run 2: Re-run ingest on identical source
+    res2 = runner.invoke(app, ["ingest", "rw", "--sample"])
+    assert res2.exit_code == 0
+    assert "Snapshot successfully built" in res2.stdout
+
+    with sqlite3.connect(db_path) as conn:
+        count_2 = conn.execute("SELECT count(*) FROM retraction_records").fetchone()[0]
+        distinct_ids_2 = conn.execute("SELECT count(DISTINCT rw_record_id) FROM retraction_records").fetchone()[0]
+
+    manifest_2 = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    # Assert exact idempotency
+    assert count_1 == count_2, f"Row count changed after repeated ingest: {count_1} != {count_2}"
+    assert count_2 == distinct_ids_2, "Duplicate records were introduced during re-ingest"
+    assert manifest_1["sha256"] == manifest_2["sha256"], "Database checksum differed across identical ingest runs"
+    assert manifest_1["rows_count"] == manifest_2["rows_count"]
+
+

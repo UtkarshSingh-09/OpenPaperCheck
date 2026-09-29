@@ -29,7 +29,7 @@ OpenPaperCheck lets anyone paste a paper's DOI and see **sourced facts** about w
   - OpenAlex fallback client with validated API key integration.
   - Full Typer CLI (`opc check <doi>`, `opc update`, `opc eval golden`, `opc snapshot build`, `opc ingest rw`, `opc version`) with Rich tree formatting and ethical disclaimers.
   - PyPI release automation (`.github/workflows/release.yml`) with Trusted Publishing OIDC.
-  - Test suite (70 unit, property, golden DOI, EOC policy, Reinstatement, no-internet handling, OpenAlex, and fairness allow-list tests passing with 93% coverage).
+  - Test suite (74 unit, property, golden DOI, EOC policy, Reinstatement, idempotency, polite pool, rate-limit, no-internet handling, OpenAlex, and fairness allow-list tests passing with 93% coverage).
   - Correspondence inquiry letters for PubPeer and PPS drafted in `docs/correspondence/`.
 - **Next 3 tasks:**
   1. Scaffold FastAPI application (`backend/src/openpapercheck/server/app.py`) with `GET /v1/check/{doi}`, `/v1/health`, `/v1/sources`.
