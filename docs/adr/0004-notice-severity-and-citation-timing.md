@@ -31,9 +31,9 @@ When OpenPaperCheck evaluates a bibliography to determine whether a citation occ
    - A paper published between a partial notice/correction and the full retraction (e.g., a paper published in 2007 citing Wakefield) is classified as `(Cited BEFORE retraction occurred)` relative to the full retraction date (2010-02-06).
 3. **Transparency of Prior History:**
    The full retraction entry preserves the controlled vocabulary reasons from Retraction Watch, including `Upgrade/Update of Prior Notice(s)`. This informs the reader that previous notices existed without misrepresenting the date of the formal retraction.
-4. **Correction-Only Policy (Erratum / Corrigendum):**
-   - **Bibliographic Reference Filtering:** Routine corrections (`nature == 'Correction'`) represent standard scientific self-correction (e.g. typos, figure labelling errors, calculation errata) and do not invalidate research. Therefore, `check_reference_dois()` explicitly filters `AND nature IN ('Retraction', 'Expression of concern')`. Citing a corrected paper NEVER triggers `NEEDS_REVIEW` on the citing paper.
-   - **Target Paper Evaluation:** A target paper with *only* a Correction notice is not discredited; `determine_paper_state()` evaluates its status based on its references (`NO_FLAGS_FOUND` if references are clean). The CLI transparently displays an informational notice regarding the correction without displaying a retraction badge.
+4. **Correction and Reinstatement Policy (Erratum / Corrigendum / Reinstated Works):**
+   - **Bibliographic Reference Filtering:** Routine corrections (`nature == 'Correction'`) and official journal reinstatements (`nature == 'Reinstatement'`) do not invalidate research. A reinstatement signifies that a prior notice was overturned or the author/work was formally cleared. Therefore, `check_reference_dois()` explicitly filters `AND nature IN ('Retraction', 'Expression of concern')`. Citing a corrected or reinstated paper NEVER triggers `NEEDS_REVIEW` on the citing paper.
+   - **Target Paper Evaluation:** A target paper with *only* a Correction or Reinstatement notice is not discredited; `determine_paper_state()` evaluates its status based on its references (`NO_FLAGS_FOUND` if references are clean). The CLI transparently displays an informational notice regarding the non-retracting notice (e.g. `Note: Target paper has a non-retracting 'Reinstatement' notice`) without displaying a retraction badge.
 
 ## Ethics and Policy Rationale
 1. **Avoid Defamatory Misattribution:**

@@ -394,3 +394,76 @@ def test_cli_check_reference_with_correction_not_flagged(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert "NO FLAGS FOUND" in result.stdout
     assert "NEEDS REVIEW" not in result.stdout
+
+
+@respx.mock
+def test_cli_check_reinstatement_not_flagged(tmp_path, monkeypatch):
+    """Verify that a paper or cited reference with nature='Reinstatement' is NOT flagged as retracted or needs_review."""
+    monkeypatch.setenv("OPC_DATA_DIR", str(tmp_path))
+    build_sqlite_snapshot(use_sample=True)
+
+    import sqlite3
+    db_file = tmp_path / "retraction_records.sqlite"
+    with sqlite3.connect(db_file) as conn:
+        conn.execute(
+            """
+            INSERT INTO retraction_records (rw_record_id, original_doi, nature, reasons, retraction_date, original_date, notice_urls)
+            VALUES (99994, '10.1016/j.reinstated.2020', 'Reinstatement', 'Author Exonerated;Investigation by Institution;', '2021-05-01', '2019-01-01', 'https://example.com/reinstated')
+            """
+        )
+
+    # 1. Citing paper referencing reinstated work
+    doi_citing = "10.1038/nature.citing.reinstated"
+    mock_payload_citing = {
+        "status": "ok",
+        "message": {
+            "title": ["Paper Citing A Reinstated Work"],
+            "container-title": ["Nature"],
+            "publisher": "Springer Nature",
+            "published-print": {"date-parts": [[2022, 1, 1]]},
+            "references-count": 1,
+            "reference": [
+                {
+                    "key": "ref1",
+                    "DOI": "10.1016/j.reinstated.2020",
+                    "article-title": "A paper that was cleared and reinstated",
+                    "year": "2019",
+                }
+            ],
+        },
+    }
+    respx.get(f"https://api.crossref.org/works/{doi_citing}").respond(status_code=200, json=mock_payload_citing)
+
+    res_citing = runner.invoke(app, ["check", doi_citing])
+    assert res_citing.exit_code == 0
+    assert "NO FLAGS FOUND" in res_citing.stdout
+    assert "NEEDS REVIEW" not in res_citing.stdout
+
+    # 2. Target paper itself is reinstated
+    doi_reinstated = "10.1016/j.reinstated.2020"
+    mock_payload_target = {
+        "status": "ok",
+        "message": {
+            "title": ["A Cleared and Reinstated Discovery"],
+            "container-title": ["Cell"],
+            "publisher": "Elsevier",
+            "published-print": {"date-parts": [[2019, 1, 1]]},
+            "references-count": 1,
+            "reference": [
+                {
+                    "key": "ref1",
+                    "DOI": "10.1016/j.cell.2020.08.020",
+                    "article-title": "Clean discovery",
+                    "year": "2020",
+                }
+            ],
+        },
+    }
+    respx.get(f"https://api.crossref.org/works/{doi_reinstated}").respond(status_code=200, json=mock_payload_target)
+
+    res_target = runner.invoke(app, ["check", doi_reinstated])
+    assert res_target.exit_code == 0
+    assert "NO FLAGS FOUND" in res_target.stdout
+    assert "RETRACTED" not in res_target.stdout
+    assert "Reinstatement" in res_target.stdout
+
