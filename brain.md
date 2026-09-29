@@ -24,12 +24,12 @@ OpenPaperCheck lets anyone paste a paper's DOI and see **sourced facts** about w
 - **Phase:** Week 0 (M0), Week 1 (Ingest), and Week 2 (Core CLI & PyPI M1) **COMPLETE**. Starting Week 3 (API & Web Service Layer).
 - **Working:**
   - Standalone core Python package (`openpapercheck.core.doi`, `storage`, `crossref`, `openalex`) with zero database server dependencies.
-  - Standard library `sqlite3` snapshot lookup empirically verified at 0.05 ms query latency.
+  - Standard library `sqlite3` snapshot lookup empirically verified across 72,718 records: 0.0055 ms warm cache, 0.058 ms cold connect/query cycle.
   - Live Crossref client with polite pool `mailto:` and 3-tier honest reference categorization (deposited DOIs, unstructured, missing/restricted).
   - OpenAlex fallback client with validated API key integration.
-  - Full Typer CLI (`opc check <doi>`, `opc update`, `opc snapshot build`, `opc ingest rw`, `opc version`) with Rich tree formatting and ethical disclaimers.
+  - Full Typer CLI (`opc check <doi>`, `opc update`, `opc eval golden`, `opc snapshot build`, `opc ingest rw`, `opc version`) with Rich tree formatting and ethical disclaimers.
   - PyPI release automation (`.github/workflows/release.yml`) with Trusted Publishing OIDC.
-  - Test suite (46 unit, property, golden DOI, OpenAlex, and fairness allow-list tests passing).
+  - Test suite (70 unit, property, golden DOI, EOC policy, Reinstatement, no-internet handling, OpenAlex, and fairness allow-list tests passing with 93% coverage).
   - Correspondence inquiry letters for PubPeer and PPS drafted in `docs/correspondence/`.
 - **Next 3 tasks:**
   1. Scaffold FastAPI application (`backend/src/openpapercheck/server/app.py`) with `GET /v1/check/{doi}`, `/v1/health`, `/v1/sources`.
