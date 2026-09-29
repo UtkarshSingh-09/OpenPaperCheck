@@ -34,17 +34,24 @@ opc check 10.1038/nature12373
 ```
 
 ### Example Terminal Output
-```text
-Paper: "Deep Residual Learning for Image Recognition"
-Journal: IEEE CVPR (2016)
-Status: No retraction recorded for this paper (as of 2026-09-28)
 
-References (62 listed):
-├── 52 checked via deposited DOIs
-│   ├── 51 no flags found
-│   └── 1 retracted (Retracted 2021; cited BEFORE retraction)
-├── 10 without DOIs (Unstructured text; not checked offline)
-└── Data sources: Retraction Watch snapshot (2026-09-28) • Crossref API
+```text
+$ opc check 10.1016/s0140-6736(97)11096-0
+
+╭──────────────────── Paper: 10.1016/s0140-6736(97)11096-0 ────────────────────╮
+│ RETRACTED: Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and     │
+│ pervasive developmental disorder in children                                 │
+│ The Lancet • Published: 1998-02-01                                           │
+│                                                                              │
+│  RETRACTED  according to Retraction Watch (Record #1001, 2010-02-06)         │
+│ Reasons: Falsification/Fabrication of Data, Ethical Violations               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+References (26 total listed):
+├── ✓ 16 checked via deposited DOIs
+│   └── 16 no flags recorded in Retraction Watch
+└── ℹ 10 without DOIs (Unstructured text; could not be checked offline)
+
+Disclaimer: This tool reports external facts. Absence of a flag is not endorsement. Every claim links to an authority.
 ```
 
 ---

@@ -21,18 +21,20 @@ OpenPaperCheck lets anyone paste a paper's DOI and see **sourced facts** about w
 10. **The maintainer takes one day off per week.** Burnout is a project risk.
 
 ## 3. Current state
-- **Phase:** Week 0 (M0) complete; Week 1 (Ingest & Snapshot) complete; Week 2 (CLI Polish & PyPI) in progress.
+- **Phase:** Week 0 (M0), Week 1 (Ingest), and Week 2 (Core CLI & PyPI M1) **COMPLETE**. Starting Week 3 (API & Web Service Layer).
 - **Working:**
-  - Decoupled core library (`openpapercheck.core.doi`, `storage`, `crossref`) with zero database server dependencies.
-  - Sub-millisecond local lookups on SQLite snapshots (empirically benchmarked at 0.05 ms avg / 0.06 ms p95 on 50,000 rows).
-  - Live Crossref client with polite pool `mailto:`, backoff, and 3-tier honest reference categorization (deposited DOIs, unstructured, missing/restricted).
-  - Interactive Typer CLI (`opc check <doi>`, `opc update`, `opc snapshot --sample`, `opc version`) with Rich tree formatting and ethical disclaimers.
-  - Test suite (40 unit, property, golden DOI, and fairness allow-list tests passing).
-  - GitHub CI workflows, pre-commit hooks, issue/PR templates, and ADRs 0001–0003.
+  - Standalone core Python package (`openpapercheck.core.doi`, `storage`, `crossref`, `openalex`) with zero database server dependencies.
+  - Standard library `sqlite3` snapshot lookup empirically verified at 0.05 ms query latency.
+  - Live Crossref client with polite pool `mailto:` and 3-tier honest reference categorization (deposited DOIs, unstructured, missing/restricted).
+  - OpenAlex fallback client with validated API key integration.
+  - Full Typer CLI (`opc check <doi>`, `opc update`, `opc snapshot build`, `opc ingest rw`, `opc version`) with Rich tree formatting and ethical disclaimers.
+  - PyPI release automation (`.github/workflows/release.yml`) with Trusted Publishing OIDC.
+  - Test suite (46 unit, property, golden DOI, OpenAlex, and fairness allow-list tests passing).
+  - Correspondence inquiry letters for PubPeer and PPS drafted in `docs/correspondence/`.
 - **Next 3 tasks:**
-  1. Build PyPI distribution wheel/sdist via Hatchling (`uv build` or `python -m build`).
-  2. Draft review card paper prototype notes in `docs/research/2026-09-paper-prototype.md`.
-  3. Scaffold Week 3 FastAPI service layer endpoints (`/v1/check/{doi}`, `/v1/health`, `/v1/sources`).
+  1. Scaffold FastAPI application (`backend/src/openpapercheck/server/app.py`) with `GET /v1/check/{doi}`, `/v1/health`, `/v1/sources`.
+  2. Implement `paper_public_state` logic and banned-words snapshot test.
+  3. Initialize Next.js web application (`frontend/`) for Milestone M2.
 
 ## 4. Architecture snapshot
 Core package (`openpapercheck`) has zero Postgres/FastAPI dependency: normalizer, Crossref client, stdlib `sqlite3` local lookup, and CLI (`opc check`, `opc update`). Nightly snapshot built from Retraction Watch CSV published to floating `data-latest` tag with `manifest.json`; monthly immutable copy on Zenodo. Server layer (FastAPI + PostgreSQL + Next.js web app) imports core and powers the public web checker (Week 4) and review crowdsourcing queue (Week 5+). Review tasks → 3 independent reviewers → consensus → open dataset (Hugging Face + Zenodo). Details: `MASTER_PLAN.md`, `docs/TECH_STACK.md`, `docs/DATABASE.md`.
