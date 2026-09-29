@@ -64,7 +64,7 @@ Core package (`openpapercheck`) has zero Postgres/FastAPI dependency: normalizer
 ### Day-1 verification log (fill in)
 | Item | Date | Result | Who |
 |---|---|---|---|
-| RW GitLab repo LICENSE text | 2026-09-28 | CC0 1.0 Universal dedication confirmed | maintainer |
+| RW GitLab repo LICENSE text | 2026-09-29 | Publicly available without license requirement; attribution requested (DOI: 10.13003/c23rw1d9) | maintainer |
 | RW CSV header matches expected columns | 2026-09-28 | Matches 20 columns; allow-list isolates 8 columns cleanly | maintainer |
 | Crossref rate-limit headers observed (public / polite) | 2026-09-28 | `x-rate-limit-limit: 10`, `x-rate-limit-interval: 1s`, `x-concurrency-limit: 3` | maintainer |
 | OpenAlex key works; single-work lookup cost is zero | 2026-09-28 | Free tier active ($1/day allowance); single-work zero incremental cost | maintainer |
