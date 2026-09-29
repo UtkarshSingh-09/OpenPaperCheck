@@ -6,10 +6,23 @@ Every external data source used by OpenPaperCheck is logged here upon addition, 
 
 ---
 
-## 1. Retraction Watch Database (via Crossref GitLab)
-- **Date checked:** 2026-09-28
-- **URL of terms:** https://gitlab.com/crossref/retraction-watch-data
-- **License / terms summary:** Crossref publishes the Retraction Watch database openly. Bibliographic metadata is dedicated to the public domain under CC0 1.0 Universal.
+## 1. Retraction Watch Database (via Crossref GitLab & REST API)
+- **Date checked:** 2026-09-29
+- **Primary Source URLs & DOIs:**
+  - Announcement: https://doi.org/10.13003/c23rw1d9 (2023-09-12)
+  - REST API Release: https://doi.org/10.13003/692016 (2025-01-29)
+  - Raw Data Repository: https://gitlab.com/crossref/retraction-watch-data
+  - Executed Agreement: https://www.crossref.org/pdfs/retraction-watch-crossref-fully-executed-23-08-2023.pdf
+- **License / terms summary (Exact Crossref Wording):**
+  - "The Retraction Watch database has been acquired by Crossref and made a public resource."
+  - "Like the rest of our metadata, the retractions are freely available... While Crossref metadata is freely available to reuse without a license, if you make use of the Retraction Watch retraction metadata in a published work, we kindly request that you provide a citation to the source."
+  - Note: Crossref does not use the literal legal phrase "CC0 1.0 Universal" in its formal agreement for the Retraction Watch database; rather, it makes the data publicly available without a license requirement while requesting a scholarly citation.
+- **Contractual & Financial Structure (Correction Note):**
+  - *Correction on prior reporting:* An earlier project report loosely referred to "$775,000" as the acquisition fee. The executed contract between Crossref and the Center for Scientific Integrity establishes:
+    1. **Initial Acquisition Fee:** USD $175,000 upfront.
+    2. **Annual Ongoing Funding:** USD $120,000 per year, escalating at 5% annually for the 5-year initial contract term ($120k + $126k + $132.3k + $138.9k + $145.8k = ~$663,000 in operational support).
+    3. **Total 5-Year Financial Commitment:** Approximately $838,000 (often cited in secondary commentary as ~$775,000–$800,000 total agreement value).
+    4. *Classification:* $175,000 is the upfront acquisition fee; $775k+ is the cumulative multi-year agreement value.
 - **What we store:** Record ID, original DOI, retraction DOI, nature, reasons verbatim, retraction date, original date, notice URLs.
 - **What we drop at ingest:** Author, Institution, Country (Fairness non-negotiable).
 - **What we redistribute in open dataset:** Verified labels, agreement stats, DOIs, verbatim reasons. No abstracts.

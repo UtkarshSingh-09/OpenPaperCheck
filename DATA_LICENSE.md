@@ -27,9 +27,9 @@ When using, redistributing, or citing OpenPaperCheck datasets, please cite:
 
 OpenPaperCheck aggregates and cross-references data from open scholarly infrastructure. Upstream sources retain their respective licenses and terms:
 
-1. **Retraction Watch Database (via Crossref):**
-   - Retraction, correction, and expression of concern records are accessed via the public GitLab repository (`crossref/retraction-watch-data`) published by Crossref.
-   - Crossref states that its bibliographic metadata is in the public domain under **Creative Commons CC0 1.0 Universal**.
+1. **Retraction Watch Database (via Crossref GitLab & REST API):**
+   - Retraction, correction, and expression of concern records are accessed via the public GitLab repository (`crossref/retraction-watch-data`) and Crossref REST API `/works/` routes.
+   - Terms of use: Crossref acquired the database from the Center for Scientific Integrity and made it a public resource, stating: *"Crossref metadata is freely available to reuse without a license, if you make use of the Retraction Watch retraction metadata in a published work, we kindly request that you provide a citation to the source"* (DOI: `10.13003/692016`). We refrain from claiming formal "CC0 1.0 Universal" dedication for this dataset to strictly reflect upstream terms.
    - Attribution: *"Retraction data provided by the Retraction Watch database, published by Crossref."*
 
 2. **Crossref REST API:**

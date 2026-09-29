@@ -46,6 +46,8 @@ It is a serious ethical violation to print "0 retracted references" when referen
 1. **References with DOIs checked** against our retraction dataset (with "data as of" date and explicit note if cited before vs. after retraction).
 2. **References without DOIs** (unstructured citations that cannot be verified offline).
 3. **Missing or restricted bibliographies:** If Crossref returns no references because the publisher restricted or omitted them, the system must display *"References not deposited by publisher"*, never *"0 retracted references"*.
+4. **Retraction Notice Hierarchy & Citation Timing Anchor (Policy Decision):**
+   When a referenced paper has multiple notices across history (e.g. an earlier partial correction vs. a subsequent full retraction), citation timing is evaluated strictly against the **formal full Retraction date** (`Retraction > Expression of Concern > Correction`). A paper cited between a partial correction and a full retraction is classified as *Cited BEFORE retraction occurred* relative to the formal retraction. Falsely accusing an author of citing after retraction based on an incomplete notice violates Principle 2 ("Attribute, don't accuse"). Prior notice history is exposed via upstream reason tags (e.g. `Upgrade/Update of Prior Notice(s)`). See `docs/adr/0004-notice-severity-and-citation-timing.md`.
 
 ## 5. Wording rules
 - Banned words in public text and LLM output: fake, fraud, fabricated, scam, cheat, guilty, and "misconduct" except when quoting a source verbatim with attribution.

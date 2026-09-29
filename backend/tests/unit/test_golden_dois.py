@@ -99,7 +99,10 @@ def test_golden_dois_state_determination():
     state_clean = determine_paper_state(None, {"deposit_status": "deposited"}, {})
     assert state_clean == PaperPublicState.NO_FLAGS_FOUND
 
-    # 4. INSUFFICIENT_DATA (missing or restricted references)
+    # 4. INSUFFICIENT_DATA (missing, restricted, or None references)
+    state_none = determine_paper_state(None, None, {})
+    assert state_none == PaperPublicState.INSUFFICIENT_DATA
+
     state_missing = determine_paper_state(None, {"deposit_status": "missing"}, {})
     assert state_missing == PaperPublicState.INSUFFICIENT_DATA
 
@@ -119,7 +122,10 @@ def test_golden_dois_citation_timing():
 
     # Case C: Unknown / missing date
     assert evaluate_citation_timing(None, ret_date) == CitationTiming.UNKNOWN
+    assert evaluate_citation_timing("2021-04-01", None) == CitationTiming.UNKNOWN
     assert evaluate_citation_timing("2021-04-01", "date unknown") == CitationTiming.UNKNOWN
+    assert evaluate_citation_timing("", ret_date) == CitationTiming.UNKNOWN
+    assert evaluate_citation_timing("2021-04-01", "") == CitationTiming.UNKNOWN
 
     # Case D: Partial year comparison
     assert evaluate_citation_timing("2021", "2020-06-05") == CitationTiming.CITED_AFTER_RETRACTION
