@@ -202,6 +202,26 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                 "2024-04-17",
                 "https://doi.org/10.1038/s41586-025-72836-9",
             ),
+            (
+                5314,
+                "10.1177/0146167209342755",
+                "10.1177/0146167216664528",
+                "Expression of concern",
+                "Error in Methods; Error in Results and/or Conclusions; Unreliable Results and/or Conclusions",
+                "2016-09-13",
+                "2009-08-18",
+                "http://retractionwatch.com/2016/10/26/journals-flag-two-papers-by-psychologist-jens-forster/",
+            ),
+            (
+                962,
+                "10.1126/science.1076185",
+                "10.1126/science.1094848",
+                "Correction",
+                "Contamination of Cell Lines/Tissues; Error in Analyses",
+                "2004-01-23",
+                "2002-10-04",
+                "https://www.science.org/doi/10.1126/science.1094848",
+            ),
         ]
         cursor.executemany(
             """

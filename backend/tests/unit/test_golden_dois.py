@@ -65,6 +65,27 @@ def test_golden_dois_against_storage(tmp_path: Path):
                 ),
             )
             record_id += 1
+        elif item.get("nature") == "Expression of concern":
+            reasons_str = "; ".join(item.get("reasons", []))
+            c.execute(
+                """
+                INSERT INTO retraction_records (
+                    rw_record_id, original_doi, retraction_doi, nature,
+                    reasons, retraction_date, original_date, notice_urls
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    record_id,
+                    item["doi"],
+                    f"{item['doi']}-eoc",
+                    "Expression of concern",
+                    reasons_str,
+                    item.get("notice_date", "2016-09-13"),
+                    item.get("original_date", "2009-08-18"),
+                    item.get("source_url", ""),
+                ),
+            )
+            record_id += 1
     conn.commit()
     conn.close()
 
@@ -72,15 +93,23 @@ def test_golden_dois_against_storage(tmp_path: Path):
     for item in golden_dois:
         doi = item["doi"]
         expected_retracted = item.get("is_retracted", False)
+        is_eoc = item.get("nature") == "Expression of concern"
         rec = get_retraction(doi, db_path=db_path)
 
         if expected_retracted:
             assert rec is not None, f"Expected {doi} to be flagged as retracted, but was not found."
             assert rec["doi"].lower() == doi.lower()
+            assert rec["nature"] == "Retraction"
+            for r in item.get("reasons", []):
+                assert any(r.lower() in stored_r.lower() for stored_r in rec["reasons"])
+        elif is_eoc:
+            assert rec is not None, f"Expected {doi} to be flagged with Expression of concern, but was not found."
+            assert rec["doi"].lower() == doi.lower()
+            assert rec["nature"] == "Expression of concern"
             for r in item.get("reasons", []):
                 assert any(r.lower() in stored_r.lower() for stored_r in rec["reasons"])
         else:
-            assert rec is None, f"Expected {doi} to NOT be retracted, but found: {rec}"
+            assert rec is None, f"Expected {doi} to NOT be retracted or flagged, but found: {rec}"
 
 
 def test_golden_dois_state_determination():

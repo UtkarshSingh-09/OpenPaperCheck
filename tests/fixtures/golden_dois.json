@@ -142,5 +142,16 @@
     "title": "The dubious benefits of broader impact",
     "is_retracted": false,
     "source_url": "https://doi.org/10.1038/475141a"
+  },
+  {
+    "doi": "10.1177/0146167209342755",
+    "expected_state": "needs_review",
+    "title": "Why Love Has Wings and Sex Has Not: How Reminders of Love and Sex Influence Creative and Analytic Thinking",
+    "is_retracted": false,
+    "nature": "Expression of concern",
+    "reasons": ["Error in Methods", "Error in Results and/or Conclusions", "Unreliable Results and/or Conclusions"],
+    "notice_date": "2016-09-13",
+    "original_date": "2009-08-18",
+    "source_url": "https://doi.org/10.1177/0146167209342755"
   }
 ]

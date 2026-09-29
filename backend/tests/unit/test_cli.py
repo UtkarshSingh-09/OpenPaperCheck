@@ -273,3 +273,124 @@ def test_cli_ingest_rw(tmp_path, monkeypatch):
     result = runner.invoke(app, ["ingest", "rw", "--sample"])
     assert result.exit_code == 0
     assert "Snapshot successfully built" in result.stdout
+
+
+@respx.mock
+def test_cli_check_no_internet_connection(tmp_path, monkeypatch):
+    """Verify clean, graceful error message when no internet connection is available (ConnectError)."""
+    monkeypatch.setenv("OPC_DATA_DIR", str(tmp_path))
+    build_sqlite_snapshot(use_sample=True)
+
+    doi = "10.1038/nature12373"
+    respx.get(f"https://api.crossref.org/works/{doi}").mock(
+        side_effect=httpx.ConnectError("Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known")
+    )
+
+    result = runner.invoke(app, ["check", doi])
+    assert result.exit_code == 1
+    assert "Network error querying Crossref API" in result.stdout
+    assert "Unable to reach api.crossref.org" in result.stdout
+
+
+@respx.mock
+def test_cli_check_eoc_target_paper(tmp_path, monkeypatch):
+    """Verify a target paper with only an Expression of Concern gets NEEDS REVIEW and explicit EOC notice."""
+    monkeypatch.setenv("OPC_DATA_DIR", str(tmp_path))
+    build_sqlite_snapshot(use_sample=True)
+
+    doi = "10.1177/0146167209342755"
+    mock_payload = {
+        "status": "ok",
+        "message": {
+            "title": ["Why Love Has Wings and Sex Has Not"],
+            "container-title": ["Personality and Social Psychology Bulletin"],
+            "publisher": "SAGE Publications",
+            "published-print": {"date-parts": [[2009, 11]]},
+            "references-count": 0,
+            "reference": [],
+        },
+    }
+    respx.get(f"https://api.crossref.org/works/{doi}").respond(status_code=200, json=mock_payload)
+
+    result = runner.invoke(app, ["check", doi])
+    assert result.exit_code == 0
+    assert "NEEDS REVIEW" in result.stdout
+    assert "EXPRESSION OF CONCERN" in result.stdout
+    assert "Record #5314" in result.stdout
+
+
+@respx.mock
+def test_cli_check_correction_not_flagged(tmp_path, monkeypatch):
+    """Verify that a paper with only a routine Correction (Erratum) is NOT marked retracted or needs_review."""
+    monkeypatch.setenv("OPC_DATA_DIR", str(tmp_path))
+    build_sqlite_snapshot(use_sample=True)
+
+    doi = "10.1126/science.1076185"
+    mock_payload = {
+        "status": "ok",
+        "message": {
+            "title": ["Corrected Genomics Study"],
+            "container-title": ["Science"],
+            "publisher": "AAAS",
+            "published-print": {"date-parts": [[2003, 5, 10]]},
+            "references-count": 1,
+            "reference": [
+                {
+                    "key": "ref1",
+                    "DOI": "10.1016/j.cell.2020.08.020",
+                    "article-title": "Clean study",
+                    "year": "2020",
+                }
+            ],
+        },
+    }
+    respx.get(f"https://api.crossref.org/works/{doi}").respond(status_code=200, json=mock_payload)
+
+    result = runner.invoke(app, ["check", doi])
+    assert result.exit_code == 0
+    assert "NO FLAGS FOUND" in result.stdout
+    assert "RETRACTED" not in result.stdout
+    assert "Correction" in result.stdout
+
+
+@respx.mock
+def test_cli_check_reference_with_correction_not_flagged(tmp_path, monkeypatch):
+    """Verify that citing a paper that only has a Correction does NOT trigger needs_review."""
+    monkeypatch.setenv("OPC_DATA_DIR", str(tmp_path))
+    build_sqlite_snapshot(use_sample=True)
+
+    import sqlite3
+    db_file = tmp_path / "retraction_records.sqlite"
+    with sqlite3.connect(db_file) as conn:
+        conn.execute(
+            """
+            INSERT INTO retraction_records (rw_record_id, original_doi, nature, reasons, retraction_date, original_date, notice_urls)
+            VALUES (99993, '10.1126/science.corrigendum1', 'Correction', 'Error in Text;', '2015-01-01', '2014-01-01', 'https://example.com/c')
+            """
+        )
+
+    doi = "10.1038/nature99999"
+    mock_payload = {
+        "status": "ok",
+        "message": {
+            "title": ["Citing Paper With Corrected Reference"],
+            "container-title": ["Nature"],
+            "publisher": "Springer Nature",
+            "published-print": {"date-parts": [[2016, 1, 1]]},
+            "references-count": 1,
+            "reference": [
+                {
+                    "key": "ref1",
+                    "DOI": "10.1126/science.corrigendum1",
+                    "article-title": "A paper that had a typo corrected",
+                    "year": "2014",
+                }
+            ],
+        },
+    }
+    respx.get(f"https://api.crossref.org/works/{doi}").respond(status_code=200, json=mock_payload)
+
+    result = runner.invoke(app, ["check", doi])
+    assert result.exit_code == 0
+    assert "NO FLAGS FOUND" in result.stdout
+    assert "NEEDS REVIEW" not in result.stdout

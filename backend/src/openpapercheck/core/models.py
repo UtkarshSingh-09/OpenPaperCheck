@@ -36,7 +36,13 @@ def determine_paper_state(
     4. If references were deposited and zero retractions found -> NO_FLAGS_FOUND
     """
     if paper_retraction is not None:
-        return PaperPublicState.RETRACTED_EXTERNAL
+        nature = paper_retraction.get("nature", "Retraction")
+        if nature == "Retraction":
+            return PaperPublicState.RETRACTED_EXTERNAL
+        elif nature == "Expression of concern":
+            return PaperPublicState.NEEDS_REVIEW
+        # If nature is 'Correction' or 'Reinstatement', target paper is not discredited;
+        # proceed to check its references.
 
     if len(retracted_refs_map) > 0:
         return PaperPublicState.NEEDS_REVIEW

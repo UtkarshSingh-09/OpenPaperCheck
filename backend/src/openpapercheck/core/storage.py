@@ -171,8 +171,9 @@ def check_reference_dois(dois: list[str], db_path: Path | None = None) -> dict[s
     Batch check a list of reference DOIs against the local retraction dataset.
 
     Returns:
-        Mapping of {doi: retraction_info} for DOIs that have retractions recorded.
-        Prioritizes full 'Retraction' notices over earlier 'Correction' or 'Expression of concern'.
+        Mapping of {doi: retraction_info} for DOIs that have retractions or expressions of concern recorded.
+        Prioritizes full 'Retraction' notices over earlier 'Expression of concern'.
+        Routine corrections (Erratum/Corrigendum) and reinstatements are excluded to avoid falsely flagging valid citations.
     """
     cleaned_dois = [normalize_doi(d) for d in dois if d]
     valid_dois = [d for d in cleaned_dois if d is not None]
@@ -193,13 +194,12 @@ def check_reference_dois(dois: list[str], db_path: Path | None = None) -> dict[s
                            retraction_date, original_date
                     FROM retraction_records
                     WHERE lower(original_doi) IN ({placeholders})
+                      AND nature IN ('Retraction', 'Expression of concern')
                     ORDER BY 
                         CASE nature
                             WHEN 'Retraction' THEN 1
                             WHEN 'Expression of concern' THEN 2
-                            WHEN 'Correction' THEN 3
-                            WHEN 'Reinstatement' THEN 4
-                            ELSE 5
+                            ELSE 3
                         END,
                         retraction_date DESC
                 """

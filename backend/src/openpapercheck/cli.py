@@ -255,12 +255,39 @@ def check(
     pub_date = work.get("publication_date") or "Unknown"
 
     if paper_retraction:
-        status_text = (
-            f"{state_badge}\n"
-            f"[bold white on red] RETRACTED [/bold white on red] "
-            f"according to Retraction Watch (Record #{paper_retraction['rw_record_id']}, {paper_retraction['retraction_date']})\n"
-            f"[yellow]Reasons:[/yellow] {', '.join(paper_retraction['reasons'])}"
-        )
+        nature = paper_retraction.get("nature", "Retraction")
+        if nature == "Retraction":
+            status_text = (
+                f"{state_badge}\n"
+                f"[bold white on red] RETRACTED [/bold white on red] "
+                f"according to Retraction Watch (Record #{paper_retraction['rw_record_id']}, {paper_retraction['retraction_date']})\n"
+                f"[yellow]Reasons:[/yellow] {', '.join(paper_retraction['reasons'])}"
+            )
+        elif nature == "Expression of concern":
+            status_text = (
+                f"{state_badge}\n"
+                f"[bold black on yellow] EXPRESSION OF CONCERN [/bold black on yellow] "
+                f"recorded in Retraction Watch (Record #{paper_retraction['rw_record_id']}, {paper_retraction['retraction_date']})\n"
+                f"[yellow]Reasons:[/yellow] {', '.join(paper_retraction['reasons'])}"
+            )
+        elif len(retracted_refs_map) > 0:
+            status_text = (
+                f"{state_badge}\n"
+                f"[bold yellow]Flagged references detected:[/bold yellow] {len(retracted_refs_map)} retracted paper(s) cited in bibliography\n"
+                f"[dim](Target paper has notice '{nature}' - Record #{paper_retraction['rw_record_id']})[/dim]"
+            )
+        elif deposit_status in ("restricted", "missing"):
+            status_text = (
+                f"{state_badge}\n"
+                f"[yellow]Reference deposit status: {deposit_status}[/yellow] — complete bibliography could not be audited\n"
+                f"[dim](Target paper has notice '{nature}' - Record #{paper_retraction['rw_record_id']})[/dim]"
+            )
+        else:
+            status_text = (
+                f"{state_badge}\n"
+                f"[bold green]No retractions or flagged references recorded[/bold green]\n"
+                f"[dim]Note: Target paper has a non-retracting '{nature}' notice (Record #{paper_retraction['rw_record_id']}, {paper_retraction['retraction_date']}).[/dim]"
+            )
     elif len(retracted_refs_map) > 0:
         status_text = (
             f"{state_badge}\n"
@@ -441,11 +468,7 @@ def eval_golden(
                         timing = evaluate_citation_timing(pub_date, ret_date)
                         timing_note = timing.value
             else:
-                actual_state = (
-                    PaperPublicState.RETRACTED_EXTERNAL
-                    if paper_retraction
-                    else PaperPublicState.INSUFFICIENT_DATA
-                )
+                actual_state = determine_paper_state(paper_retraction, None, {})
 
             # Match criteria
             state_match = actual_state.value == expected

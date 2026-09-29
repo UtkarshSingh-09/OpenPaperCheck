@@ -31,10 +31,13 @@ When OpenPaperCheck evaluates a bibliography to determine whether a citation occ
    - A paper published between a partial notice/correction and the full retraction (e.g., a paper published in 2007 citing Wakefield) is classified as `(Cited BEFORE retraction occurred)` relative to the full retraction date (2010-02-06).
 3. **Transparency of Prior History:**
    The full retraction entry preserves the controlled vocabulary reasons from Retraction Watch, including `Upgrade/Update of Prior Notice(s)`. This informs the reader that previous notices existed without misrepresenting the date of the formal retraction.
+4. **Correction-Only Policy (Erratum / Corrigendum):**
+   - **Bibliographic Reference Filtering:** Routine corrections (`nature == 'Correction'`) represent standard scientific self-correction (e.g. typos, figure labelling errors, calculation errata) and do not invalidate research. Therefore, `check_reference_dois()` explicitly filters `AND nature IN ('Retraction', 'Expression of concern')`. Citing a corrected paper NEVER triggers `NEEDS_REVIEW` on the citing paper.
+   - **Target Paper Evaluation:** A target paper with *only* a Correction notice is not discredited; `determine_paper_state()` evaluates its status based on its references (`NO_FLAGS_FOUND` if references are clean). The CLI transparently displays an informational notice regarding the correction without displaying a retraction badge.
 
 ## Ethics and Policy Rationale
 1. **Avoid Defamatory Misattribution:**
-   Under OpenPaperCheck's core principle *"Evidence over opinion; attribute, don't accuse"*, accusing an author of "citing after retraction" based on a partial notice (which explicitly was not a formal journal retraction) is factually incorrect and introduces reputational risk for innocent researchers.
+   Under OpenPaperCheck's core principle *"Evidence over opinion; attribute, don't accuse"*, accusing an author of "citing after retraction" based on a partial notice (which explicitly was not a formal journal retraction) or flagging bibliographies due to an erratum is factually incorrect and introduces reputational risk for innocent researchers.
 2. **Conservative Anchor Rule:**
    When ambiguity exists, the system defaults to the formal legal/editorial act of full retraction.
 3. **Alignment with Upstream Crossref Taxonomy:**
@@ -43,4 +46,6 @@ When OpenPaperCheck evaluates a bibliography to determine whether a citation occ
 ## Consequences
 - **Positive:** Deterministic, legally defensible, and reproducible benchmark across all boundary cases.
 - **Positive:** Real-world citing papers from 2004–2010 (such as `10.1111/j.1467-9566.2007.00544.x`) pass validation without arbitrary manual overrides.
+- **Positive:** Authors who cite papers that published a standard erratum/corrigendum are never falsely flagged as citing discredited research.
 - **Negative:** Users who want to know specifically if a paper was cited after an *Expression of Concern* must inspect the notice reasons and external authority links, as the primary comparative anchor prioritizes the final retraction.
+
