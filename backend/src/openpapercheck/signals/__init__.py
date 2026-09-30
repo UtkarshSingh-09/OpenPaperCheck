@@ -2,7 +2,7 @@
 Signals package for OpenPaperCheck.
 Deterministic evidence signals (S-001, S-002, S-003, S-010, S-040).
 Strictly adheres to ETHICS.md and SIGNALS_AND_ML.md:
-- No author, institution, or nationality features.
+- Zero personal, geographic, or organizational demographics.
 - No banned words in descriptions.
 - Sourced facts only.
 """
