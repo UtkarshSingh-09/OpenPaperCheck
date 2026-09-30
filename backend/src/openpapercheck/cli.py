@@ -50,11 +50,23 @@ SNAPSHOT_DOWNLOAD_URL = (
 )
 
 
-def print_freshness_footer(as_of_date: str, rows_count: int | None = None) -> None:
+def print_freshness_footer(
+    as_of_date: str, rows_count: int | None = None, is_sample: bool = False
+) -> None:
     """Print the mandatory standardized data freshness footer across all check outputs."""
-    records_str = f"{rows_count:,} records" if rows_count else "verified snapshot"
+    is_sample_mode = is_sample or (rows_count is not None and rows_count < 1000)
+    if is_sample_mode:
+        count_str = f"{rows_count:,}" if rows_count else "11"
+        console.print(
+            f"\n[bold yellow]⚠️  SAMPLE MODE:[/bold yellow] [yellow]{count_str} test records only. "
+            f"Run [bold cyan]opc update[/bold cyan] for the full 72,718-record database.[/yellow]"
+        )
+        records_str = f"{count_str} test records"
+    else:
+        records_str = f"{rows_count:,} records" if rows_count else "verified snapshot"
+
     console.print(
-        f"\n[dim]Data as of: {as_of_date} ({records_str}) • Sources: Crossref API, Retraction Watch[/dim]\n"
+        f"[dim]Data as of: {as_of_date} ({records_str}) • Sources: Crossref API, Retraction Watch[/dim]\n"
         "[dim]Disclaimer: This tool reports external facts. Absence of a flag is not endorsement. "
         "Every claim links to an authority.[/dim]"
     )
@@ -194,6 +206,7 @@ def check(
     manifest = get_manifest() or {}
     as_of_date = manifest.get("as_of", "local database")
     rows_count = manifest.get("rows_count")
+    is_sample = manifest.get("is_sample", False)
 
     if not has_snapshot():
         console.print(
@@ -314,14 +327,14 @@ def check(
 
     if deposit_status == "missing":
         console.print("[yellow]Notice:[/yellow] No references were deposited for this work in Crossref.")
-        print_freshness_footer(as_of_date, rows_count)
+        print_freshness_footer(as_of_date, rows_count, is_sample)
         return
     elif deposit_status == "restricted":
         console.print(
             f"[bold yellow]Notice:[/bold yellow] Crossref lists {total_listed} references for this work, "
             "but the publisher has [italic]restricted open access[/italic] to the reference list."
         )
-        print_freshness_footer(as_of_date, rows_count)
+        print_freshness_footer(as_of_date, rows_count, is_sample)
         return
 
     retracted_count = len(retracted_refs_map)
@@ -366,7 +379,7 @@ def check(
         )
 
     console.print(tree)
-    print_freshness_footer(as_of_date, rows_count)
+    print_freshness_footer(as_of_date, rows_count, is_sample)
 
 
 # Evaluation Subcommands

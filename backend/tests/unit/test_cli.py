@@ -140,7 +140,8 @@ def test_cli_check_retracted_paper(tmp_path, monkeypatch):
     result = runner.invoke(app, ["check", doi])
     assert result.exit_code == 0
     assert "RETRACTED EXTERNAL" in result.stdout
-    assert "Retraction Watch (Record #1001" in result.stdout
+    assert "Retraction Watch (Record #4036" in result.stdout
+    assert "SAMPLE MODE:" in result.stdout
     assert "Data as of:" in result.stdout
 
 

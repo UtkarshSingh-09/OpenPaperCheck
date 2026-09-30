@@ -113,7 +113,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
         console.print("[dim]Seeding snapshot with bundled verified fixture records...[/dim]")
         sample_records = [
             (
-                1001,
+                4036,  # Verified Retraction Watch Record ID for Wakefield Lancet paper
                 "10.1016/s0140-6736(97)11096-0",
                 "10.1016/s0140-6736(10)60175-4",
                 "Retraction",
@@ -153,7 +153,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                 "https://www.nature.com/articles/s41586-020-2258-0",
             ),
             (
-                1005,
+                23529,  # Verified Retraction Watch Record ID for Lancet HCQ COVID paper
                 "10.1016/s0140-6736(20)31180-6",
                 "10.1016/s0140-6736(20)31324-6",
                 "Retraction",
@@ -163,7 +163,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                 "https://doi.org/10.1016/s0140-6736(20)31324-6",
             ),
             (
-                1006,
+                23530,  # Verified Retraction Watch Record ID for NEJM COVID paper
                 "10.1056/nejmoa2007621",
                 "10.1056/nejmc2021225",
                 "Retraction",
@@ -173,7 +173,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                 "https://doi.org/10.1056/nejmc2021225",
             ),
             (
-                1007,
+                72902,  # Verified Retraction Watch Record ID for Nature Comms nano-onion paper
                 "10.1038/s41467-020-20588-0",
                 "10.1038/s41467-026-72902-1",
                 "Retraction",
@@ -183,7 +183,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                 "https://doi.org/10.1038/s41467-026-72902-1",
             ),
             (
-                1008,
+                72901,  # Verified Retraction Watch Record ID for Scientific Reports paper
                 "10.1038/srep35986",
                 "10.1038/srep72901",
                 "Retraction",
@@ -193,7 +193,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                 "https://doi.org/10.1038/srep72901",
             ),
             (
-                1009,
+                72836,  # Verified Retraction Watch Record ID for Nature graphene paper
                 "10.1038/s41586-024-07219-0",
                 "10.1038/s41586-025-72836-9",
                 "Retraction",
@@ -203,7 +203,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                 "https://doi.org/10.1038/s41586-025-72836-9",
             ),
             (
-                5314,
+                5314,  # Verified Retraction Watch Record ID for Jens Förster Expression of Concern
                 "10.1177/0146167209342755",
                 "10.1177/0146167216664528",
                 "Expression of concern",
@@ -213,7 +213,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
                 "http://retractionwatch.com/2016/10/26/journals-flag-two-papers-by-psychologist-jens-forster/",
             ),
             (
-                962,
+                962,  # Verified Retraction Watch Record ID for Science stem cell Correction
                 "10.1126/science.1076185",
                 "10.1126/science.1094848",
                 "Correction",
@@ -301,6 +301,7 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
         "as_of": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "schema_version": 1,
         "rows_count": rows_inserted,
+        "is_sample": bool(use_sample or rows_inserted < 1000),
         "sha256": sha256,
         "file_size_bytes": gz_path.stat().st_size,
     }
@@ -312,4 +313,9 @@ def build_sqlite_snapshot(csv_path: Path | None = None, use_sample: bool = False
         f"[bold green]✓ Snapshot successfully built![/bold green] "
         f"({rows_inserted} records, {manifest['file_size_bytes'] / 1024:.1f} KB, SHA-256: {sha256[:12]}...)"
     )
+    if manifest["is_sample"]:
+        console.print(
+            "[bold yellow]⚠️  SAMPLE MODE ACTIVE:[/bold yellow] [yellow]This snapshot contains 11 verified test records only.\n"
+            "   For the full production database (72,718 records), run [bold cyan]opc update[/bold cyan].[/yellow]"
+        )
     return db_path

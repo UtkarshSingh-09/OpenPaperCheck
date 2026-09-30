@@ -20,7 +20,7 @@ The T1 evidence card asks a reviewer to confirm whether a specific external noti
 │                                                                            │
 │ Extracted Notice Fact:                                                     │
 │ - Retraction Notice DOI: 10.1016/s0140-6736(10)60175-4                     │
-│ - External Source: Retraction Watch (Record #1001)                         │
+│ - External Source: Retraction Watch (Record #4036)                         │
 │ - External Date: 2010-02-06                                                │
 │ - Notice URL: [Open Official Notice Link in New Tab ↗]                     │
 │                                                                            │
