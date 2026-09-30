@@ -47,7 +47,7 @@ async def get_sources() -> SourcesResponse:
             license="CC0 1.0 Universal",
             records_count=None,
             as_of_date="live query",
-            description="Open and comprehensive catalog of scholarly papers, authors, and venues.",
+            description="Open and comprehensive catalog of scholarly works, citations, and venues.",
         ),
     ]
 

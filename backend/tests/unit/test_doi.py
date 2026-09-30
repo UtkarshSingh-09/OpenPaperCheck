@@ -31,6 +31,10 @@ from openpapercheck.core.doi import is_valid_doi, normalize_doi
         ("10.1038/nature12373,", "10.1038/nature12373"),
         ("10.1038/nature12373;", "10.1038/nature12373"),
         ("https://doi.org/10.1038/nature12373)", "10.1038/nature12373"),
+        ("(10.1038/nature12373)", "10.1038/nature12373"),
+        ("\"10.1038/nature12373\"", "10.1038/nature12373"),
+        ("<10.1038/nature12373>", "10.1038/nature12373"),
+        ("10.1000/182(2)", "10.1000/182(2)"),
         # Whitespace
         ("   10.1038/nature12373 \n\t", "10.1038/nature12373"),
         # URL encoding

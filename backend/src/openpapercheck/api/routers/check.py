@@ -186,6 +186,7 @@ async def check_paper(
         ),
         data_as_of=data_as_of_map,
         external_links={
+            "pubpeer": pubpeer_url,
             "pubpeer_search": pubpeer_url,
             "doi_resolver": f"https://doi.org/{canonical_doi}",
         },

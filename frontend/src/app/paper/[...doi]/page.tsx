@@ -133,7 +133,7 @@ export default async function PaperReportPage({ params }: PageProps) {
           {/* 2. Paper Bibliographic Metadata */}
           <PaperHeader
             paper={report.paper}
-            pubpeerUrl={report.external_links?.pubpeer}
+            pubpeerUrl={report.external_links?.pubpeer || report.external_links?.pubpeer_search}
           />
 
           {/* 3. Sourced Facts & Deterministic Signals */}

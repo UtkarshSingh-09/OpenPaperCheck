@@ -36,6 +36,16 @@ def normalize_doi(raw: str | None) -> str | None:
     if not cleaned:
         return None
 
+    # Strip enclosing wrapper pairs (e.g. "(10.1038/...)", "<...>", quotes)
+    while len(cleaned) >= 2 and (
+        (cleaned.startswith("(") and cleaned.endswith(")"))
+        or (cleaned.startswith("[") and cleaned.endswith("]"))
+        or (cleaned.startswith("<") and cleaned.endswith(">"))
+        or (cleaned.startswith('"') and cleaned.endswith('"'))
+        or (cleaned.startswith("'") and cleaned.endswith("'"))
+    ):
+        cleaned = cleaned[1:-1].strip()
+
     # Strip standard URL and protocol prefixes
     cleaned = PREFIX_PATTERN.sub("", cleaned)
 
@@ -45,8 +55,17 @@ def normalize_doi(raw: str | None) -> str | None:
     # Strip again and lowercase
     cleaned = cleaned.strip().lower()
 
+    # Strip enclosing quotes or angle brackets
+    cleaned = cleaned.strip("\"'<>")
+
     # Strip trailing punctuation often accidentally captured in citations
-    cleaned = cleaned.rstrip(".,;):]")
+    cleaned = cleaned.rstrip(".,;:")
+
+    # Strip trailing parenthesis/bracket only if unmatched (e.g. from citation context "(see 10.1038/...")
+    while cleaned.endswith(")") and cleaned.count(")") > cleaned.count("("):
+        cleaned = cleaned[:-1].rstrip(".,;:")
+    while cleaned.endswith("]") and cleaned.count("]") > cleaned.count("["):
+        cleaned = cleaned[:-1].rstrip(".,;:")
 
     # Validate against regex
     if not DOI_PATTERN.match(cleaned):
