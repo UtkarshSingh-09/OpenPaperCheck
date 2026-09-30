@@ -4,7 +4,8 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Data License: CC-BY 4.0](https://img.shields.io/badge/Data_License-CC--BY_4.0-green.svg)](DATA_LICENSE.md)
-[![Status: Planning / Week 0](https://img.shields.io/badge/Status-Week_0_Dev-orange.svg)](brain.md)
+[![PyPI version](https://img.shields.io/badge/PyPI-v0.1.0.dev2-blue.svg)](https://pypi.org/project/openpapercheck/)
+[![Status: Milestone M2](https://img.shields.io/badge/Status-Milestone_M2_Ready-emerald.svg)](docs/WEEKLY_PLAN.md)
 
 ---
 
@@ -102,6 +103,9 @@ open http://localhost:3000
 
 Every part of OpenPaperCheck is specified in detail:
 
+- **Scientific Methodology:** [docs/about/method.md](docs/about/method.md)
+- **Ethics & Banned Words:** [docs/about/ethics.md](docs/about/ethics.md)
+- **Infrastructure & Restore Runbook:** [infra/README.md](infra/README.md)
 - **Living Project Memory:** [brain.md](brain.md)
 - **Problem Statement & Users:** [problem.md](problem.md)
 - **Master Plan of Record:** [MASTER_PLAN.md](MASTER_PLAN.md)

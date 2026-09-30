@@ -67,3 +67,7 @@ Thumbs.db
 # Logs
 logs/
 *.log
+
+# Infrastructure Backups
+infra/backups/*
+!infra/backups/.gitkeep

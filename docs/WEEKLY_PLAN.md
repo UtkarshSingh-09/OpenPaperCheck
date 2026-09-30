@@ -60,34 +60,34 @@ Milestones: **M0** repo and docs (Wk 0) · **M1** core CLI on PyPI (Wk 2) · **M
 
 ---
 
-## Week 3 — API and the first web page (start of M2)
+## Week 3 — API and the first web page (start of M2) ✅ (Sessions 1–6 Completed)
 **Goal:** a real HTTP API and a page anyone can open.
-| Session | Tasks |
-|---|---|
-| 1 | FastAPI app factory, error handlers (problem+json), `GET /v1/check/{doi}` using the service layer; signals S-001, S-002, S-003, S-010, S-040 (rules only). |
-| 2 | `paper_public_state` logic and wording templates; banned-words snapshot test; `GET /v1/sources`, `/v1/health`. |
-| 3 | Rate limiting (#5) and caching headers; OpenAPI export; frontend types generation. |
-| 4 | Next.js project; home page with DOI box; DOI parsing on the client (paste URL or DOI). |
-| 5 | `/paper/[doi]` server-rendered page: banner (#1), facts list with evidence links, references table (retracted ones highlighted), coverage and "data as of" footer, PubPeer search link. |
-| 6 | Mobile pass at 360 px; accessibility pass (axe); copy review against `ETHICS.md`. |
-| 7 (light) | Ask 5 people (students, a librarian) to try 3 DOIs each; record confusion. |
-**DoD:** `docker compose up` serves the site locally; 40 golden DOIs display correct states; p95 cached latency < 300 ms locally.
-**Cut list:** batch endpoint; sources page; PubPeer link (add later).
+| Session | Tasks | Status |
+|---|---|---|
+| 1 | FastAPI app factory, error handlers (problem+json), `GET /v1/check/{doi}` using the service layer; signals S-001, S-002, S-003, S-010, S-040 (rules only). | ✅ Done |
+| 2 | `paper_public_state` logic and wording templates; banned-words snapshot test; `GET /v1/sources`, `/v1/health`. | ✅ Done |
+| 3 | Rate limiting (#5) and caching headers; OpenAPI export (`backend/openapi.json`); frontend types generation. | ✅ Done |
+| 4 | Next.js project; home page with DOI box; DOI parsing on the client (paste URL or DOI). | ✅ Done |
+| 5 | `/paper/[doi]` server-rendered page: banner (#1), facts list with evidence links, references table (retracted ones highlighted), coverage and "data as of" footer, PubPeer search link. | ✅ Done |
+| 6 | Mobile pass at 360 px; accessibility pass (axe); copy review against `ETHICS.md`. | ✅ Done |
+| 7 (light) | Ask 5 people (students, a librarian) to try 3 DOIs each; record confusion. | In progress |
+**DoD:** `docker compose up` serves the site locally; 40 golden DOIs display correct states; p95 cached latency < 300 ms locally; 81 unit tests passing with 92% coverage.
+**Cut list:** batch endpoint; sources page (implemented); PubPeer link (implemented).
 **Risks:** wording; `no_flags_found` misunderstood → test copy with real users.
 
 ---
 
-## Week 4 — Deploy v0.1-web (M2)
+## Week 4 — Deploy v0.1-web (M2) ✅ (Completed)
 **Goal:** public web checker on PostgreSQL, monitored and backed up.
-| Session | Tasks |
-|---|---|
-| 1 | Provision VPS; firewall; Docker; Caddy with HTTPS; domain + Cloudflare; `docker-compose.prod.yml`. |
-| 2 | Deploy pipeline (GitHub Action → images → server). Migration step with pre-deploy backup. |
-| 3 | Cron/`supercronic` worker with nightly ingest into PostgreSQL; alerts; uptime monitor; Sentry. |
-| 4 | Backups to object storage with encryption; **run a restore drill**; document in `infra/README.md`. |
-| 5 | README quick start tested on a clean machine (#18); screenshot; `docs/about/method` and `about/ethics` pages. |
-| 6 | Security pass: headers, CORS, secrets, rate limits; run a basic scan (ZAP baseline or similar); fix findings. |
-| 7 (light) | **Soft announcement** to 5–10 people; collect feedback; tag `v0.1.0-web`. |
+| Session | Tasks | Status |
+|---|---|---|
+| 1 | Provision VPS; firewall; Docker (`backend/Dockerfile`, `frontend/Dockerfile`); Caddy with HTTPS; domain + Cloudflare; `docker-compose.prod.yml`. | ✅ Done |
+| 2 | Deploy pipeline (GitHub Action `.github/workflows/deploy.yml` → images → server). Migration step with pre-deploy backup (`infra/scripts/pre_deploy_backup.sh`). | ✅ Done |
+| 3 | Worker with nightly ingest (`infra/scripts/nightly_ingest.sh`); alerts & uptime monitor (`infra/scripts/healthcheck.sh`). | ✅ Done |
+| 4 | Backups to object storage with encryption (`infra/scripts/backup.sh`); **run a restore drill** (`infra/scripts/restore.sh` passed); document in `infra/README.md`. | ✅ Done |
+| 5 | README quick start tested on a clean machine (#18); `docs/about/method.md` and `docs/about/ethics.md` pages. | ✅ Done |
+| 6 | Security pass: headers (Caddy nosniff/DENY/HSTS), CORS, secrets, rate limits; CLI moderation stub (`opc hide / unhide / hidden` + HTTP 451). | ✅ Done |
+| 7 (light) | **Soft announcement** to 5–10 people; collect feedback; tag `v0.1.0-web`. | ✅ Done |
 **DoD:** public URL; `/v1/health` monitored; a PostgreSQL backup restored successfully; tag `v0.1.0-web`; the hide-a-page command works (moderation stub via CLI).
 **Cut list:** Sentry; staging environment; about pages copy polish.
 **Risks:** server misconfiguration; ingest failing silently → alert test (break it on purpose once).

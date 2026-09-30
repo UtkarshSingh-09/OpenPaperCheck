@@ -1,0 +1,64 @@
+# ==============================================================================
+# OpenPaperCheck Production Caddy Configuration
+# Auto-HTTPS (Let's Encrypt / ZeroSSL) + Reverse Proxy + Security Headers
+# ==============================================================================
+
+{
+    email {$ACME_EMAIL:admin@openpapercheck.org}
+    admin off
+}
+
+{$DOMAIN:localhost} {
+    # Compression
+    encode zstd gzip
+
+    # Strict Security Headers
+    header {
+        # Prevent MIME type sniffing
+        X-Content-Type-Options "nosniff"
+        # Prevent clickjacking
+        X-Frame-Options "DENY"
+        # Control referrer information
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Disable unwanted browser features
+        Permissions-Policy "accelerometer=(), camera=(), geolocation=(), microphone=(), payment=(), usb=()"
+        # Strict HSTS (enabled for HTTPS)
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Remove identifying server header
+        -Server
+    }
+
+    # API Endpoints (FastAPI)
+    handle /v1/* {
+        reverse_proxy api:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # API Documentation (Swagger / OpenAPI)
+    handle /docs* {
+        reverse_proxy api:8000
+    }
+    handle /openapi.json {
+        reverse_proxy api:8000
+    }
+
+    # Frontend Web App (Next.js)
+    handle {
+        reverse_proxy web:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Structured logging
+    log {
+        output stdout
+        format json
+    }
+}

@@ -64,6 +64,15 @@ def init_schema(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_rr_nature ON retraction_records (nature);
         """
     )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS hidden_dois (
+            doi TEXT PRIMARY KEY,
+            reason TEXT NOT NULL,
+            hidden_at TEXT NOT NULL
+        );
+        """
+    )
     conn.commit()
 
 
@@ -96,11 +105,14 @@ def get_manifest() -> dict[str, Any] | None:
 def get_connection(readonly: bool = True, db_path: Path | None = None) -> sqlite3.Connection:
     """Open a connection to the SQLite snapshot."""
     path = db_path or get_snapshot_path()
-    if not path.is_file():
+    if readonly and not path.is_file():
         raise FileNotFoundError(
             f"No retraction database snapshot found at {path}. "
             "Please run 'opc update' to download the latest verified snapshot."
         )
+
+    if not readonly and not path.parent.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
 
     uri = f"file:{path.as_posix()}?mode=ro" if readonly else path.as_posix()
     conn = sqlite3.connect(uri, uri=readonly)
@@ -225,3 +237,107 @@ def check_reference_dois(dois: list[str], db_path: Path | None = None) -> dict[s
         pass
 
     return retracted
+
+
+def hide_doi(doi: str, reason: str, db_path: Path | None = None) -> bool:
+    """
+    Hide a paper DOI from public display (moderation stub).
+    """
+    canonical = normalize_doi(doi)
+    if not canonical:
+        return False
+
+    from datetime import datetime, timezone
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    with get_connection(readonly=False, db_path=db_path) as conn:
+        init_schema(conn)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO hidden_dois (doi, reason, hidden_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(doi) DO UPDATE SET
+                reason = excluded.reason,
+                hidden_at = excluded.hidden_at;
+            """,
+            (canonical, reason, now_iso),
+        )
+        conn.commit()
+    return True
+
+
+def unhide_doi(doi: str, db_path: Path | None = None) -> bool:
+    """
+    Unhide a previously hidden paper DOI.
+    """
+    canonical = normalize_doi(doi)
+    if not canonical:
+        return False
+
+    with get_connection(readonly=False, db_path=db_path) as conn:
+        init_schema(conn)
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM hidden_dois WHERE lower(doi) = ?",
+            (canonical,),
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+
+
+def is_doi_hidden(doi: str, db_path: Path | None = None) -> tuple[bool, str | None]:
+    """
+    Check if a DOI is currently hidden by administrator moderation.
+    Returns (is_hidden, reason).
+    """
+    canonical = normalize_doi(doi)
+    if not canonical:
+        return False, None
+
+    try:
+        with get_connection(readonly=True, db_path=db_path) as conn:
+            cursor = conn.cursor()
+            # Ensure table exists before querying
+            cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='hidden_dois'"
+            )
+            if not cursor.fetchone():
+                return False, None
+
+            cursor.execute(
+                "SELECT reason FROM hidden_dois WHERE lower(doi) = ?",
+                (canonical,),
+            )
+            row = cursor.fetchone()
+            if row:
+                return True, row["reason"]
+    except Exception:
+        return False, None
+
+    return False, None
+
+
+def list_hidden_dois(db_path: Path | None = None) -> list[dict[str, str]]:
+    """
+    List all currently hidden DOIs with reasons and timestamps.
+    """
+    try:
+        with get_connection(readonly=True, db_path=db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='hidden_dois'"
+            )
+            if not cursor.fetchone():
+                return []
+
+            cursor.execute(
+                "SELECT doi, reason, hidden_at FROM hidden_dois ORDER BY hidden_at DESC"
+            )
+            return [
+                {"doi": row["doi"], "reason": row["reason"], "hidden_at": row["hidden_at"]}
+                for row in cursor.fetchall()
+            ]
+    except Exception:
+        return []
+

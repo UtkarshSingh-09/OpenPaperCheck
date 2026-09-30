@@ -1,0 +1,16 @@
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.ruff_cache
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.git
+.github
+data/snapshots/*.sqlite
+data/snapshots/*.sqlite.gz

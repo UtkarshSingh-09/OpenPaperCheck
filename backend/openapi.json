@@ -1,0 +1,613 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenPaperCheck API",
+    "description": "Fast, honest scholarly retraction and reference integrity checker.\n\nPaste a paper's DOI to receive sourced facts about whether it has been retracted or leans on retracted work. Provides deterministic signals (S-001, S-002, S-003, S-010, S-040) with zero personal profiling and verifiable external authority links.",
+    "contact": {
+      "name": "OpenPaperCheck Contributors",
+      "url": "https://github.com/UtkarshSingh-09/OpenPaperCheck"
+    },
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "0.1.0.dev2"
+  },
+  "paths": {
+    "/v1/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Service Health Check",
+        "description": "Returns service status, database snapshot info, and record counts for uptime monitoring.",
+        "operationId": "get_health_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sources": {
+      "get": {
+        "tags": [
+          "Transparency"
+        ],
+        "summary": "List Scholarly Data Sources",
+        "description": "Returns data authorities, licenses, freshness dates, and record counts for transparency.",
+        "operationId": "get_sources_v1_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourcesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/check/{doi}": {
+      "get": {
+        "tags": [
+          "Check"
+        ],
+        "summary": "Inspect a paper and its references for retractions",
+        "description": "Returns public integrity state, deterministic signals, and reference breakdown for any DOI.",
+        "operationId": "check_paper_v1_check__doi__get",
+        "parameters": [
+          {
+            "name": "doi",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doi"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional email for Crossref polite pool priority",
+              "title": "Email"
+            },
+            "description": "Optional email for Crossref polite pool priority"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CheckResponse": {
+        "properties": {
+          "doi": {
+            "type": "string",
+            "title": "Doi",
+            "description": "Canonical normalised DOI"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PaperPublicState",
+            "description": "Public state: retracted_external | needs_review | no_flags_found | insufficient_data"
+          },
+          "headline": {
+            "type": "string",
+            "title": "Headline",
+            "description": "Honest human-readable headline summary"
+          },
+          "paper": {
+            "$ref": "#/components/schemas/PaperMetadata",
+            "description": "Paper bibliographic metadata"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/Signal"
+            },
+            "type": "array",
+            "title": "Signals",
+            "description": "Standardized deterministic signals"
+          },
+          "references": {
+            "$ref": "#/components/schemas/ReferenceBreakdown",
+            "description": "Reference list audit"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/CoverageInfo",
+            "description": "Source coverage details"
+          },
+          "data_as_of": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Data As Of",
+            "description": "Freshness dates per data source"
+          },
+          "external_links": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "External Links",
+            "description": "External authority search links (PubPeer, etc.)"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer",
+            "description": "Ethical disclaimer: reports external facts, not personal judgement"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "doi",
+          "state",
+          "headline",
+          "paper",
+          "references",
+          "coverage",
+          "data_as_of",
+          "disclaimer"
+        ],
+        "title": "CheckResponse",
+        "description": "Full check response payload for a DOI."
+      },
+      "CoverageInfo": {
+        "properties": {
+          "sources_answered": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources Answered"
+          },
+          "sources_failed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources Failed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CoverageInfo",
+        "description": "Provenance and answering sources."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "ok"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "db": {
+            "type": "string",
+            "title": "Db",
+            "default": "ok"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "records_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records Count"
+          },
+          "is_sample": {
+            "type": "boolean",
+            "title": "Is Sample",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version",
+          "as_of",
+          "records_count"
+        ],
+        "title": "HealthResponse",
+        "description": "Health check response for monitoring and uptime probes."
+      },
+      "PaperMetadata": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Primary title of the paper"
+          },
+          "journal": {
+            "type": "string",
+            "title": "Journal",
+            "description": "Container / journal title",
+            "default": ""
+          },
+          "publisher": {
+            "type": "string",
+            "title": "Publisher",
+            "description": "Publisher name",
+            "default": ""
+          },
+          "publication_date": {
+            "type": "string",
+            "title": "Publication Date",
+            "description": "ISO date of publication (YYYY, YYYY-MM, or YYYY-MM-DD)",
+            "default": ""
+          },
+          "doi": {
+            "type": "string",
+            "title": "Doi",
+            "description": "Canonical normalised DOI"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "doi"
+        ],
+        "title": "PaperMetadata",
+        "description": "Bibliographic metadata for target paper."
+      },
+      "PaperPublicState": {
+        "type": "string",
+        "enum": [
+          "retracted_external",
+          "needs_review",
+          "no_flags_found",
+          "insufficient_data"
+        ],
+        "title": "PaperPublicState",
+        "description": "Standard 4 public states for paper integrity facts.\nStrictly defined in TECH_STACK.md and MASTER_PLAN.md."
+      },
+      "ReferenceBreakdown": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available",
+            "description": "True if reference list is deposited and open"
+          },
+          "deposit_status": {
+            "type": "string",
+            "title": "Deposit Status",
+            "description": "open | restricted | missing"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "Source provider of citation metadata",
+            "default": "crossref"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total references listed by publisher"
+          },
+          "with_doi": {
+            "type": "integer",
+            "title": "With Doi",
+            "description": "References containing a valid persistent DOI"
+          },
+          "without_doi": {
+            "type": "integer",
+            "title": "Without Doi",
+            "description": "Unstructured text references lacking persistent DOIs"
+          },
+          "retracted": {
+            "items": {
+              "$ref": "#/components/schemas/RetractedRefInfo"
+            },
+            "type": "array",
+            "title": "Retracted",
+            "description": "Retracted references identified"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "available",
+          "deposit_status",
+          "total",
+          "with_doi",
+          "without_doi"
+        ],
+        "title": "ReferenceBreakdown",
+        "description": "3-Tier Reference integrity breakdown."
+      },
+      "RetractedRefInfo": {
+        "properties": {
+          "position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position",
+            "description": "Position index in reference list"
+          },
+          "doi": {
+            "type": "string",
+            "title": "Doi",
+            "description": "Normalised DOI of cited paper"
+          },
+          "nature": {
+            "type": "string",
+            "title": "Nature",
+            "description": "Notice type (Retraction, Expression of concern)",
+            "default": "Retraction"
+          },
+          "retraction_date": {
+            "type": "string",
+            "title": "Retraction Date",
+            "description": "ISO date of retraction notice",
+            "default": ""
+          },
+          "timing": {
+            "type": "string",
+            "title": "Timing",
+            "description": "cited_after_retraction | cited_before_retraction | unknown",
+            "default": "unknown"
+          },
+          "rw_record_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rw Record Id",
+            "description": "Retraction Watch Record ID"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "Verbatim reasons from Retraction Watch"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "doi"
+        ],
+        "title": "RetractedRefInfo",
+        "description": "Information regarding a single retracted or problematic reference."
+      },
+      "Signal": {
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/SignalId"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "is_public": {
+            "type": "boolean",
+            "title": "Is Public",
+            "default": true
+          },
+          "value": {
+            "title": "Value"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "evidence": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Evidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "value",
+          "description"
+        ],
+        "title": "Signal"
+      },
+      "SignalId": {
+        "type": "string",
+        "enum": [
+          "S-001",
+          "S-002",
+          "S-003",
+          "S-010",
+          "S-040"
+        ],
+        "title": "SignalId"
+      },
+      "SourceMetadata": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "authority": {
+            "type": "string",
+            "title": "Authority"
+          },
+          "license": {
+            "type": "string",
+            "title": "License"
+          },
+          "records_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records Count"
+          },
+          "as_of_date": {
+            "type": "string",
+            "title": "As Of Date"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "authority",
+          "license",
+          "records_count",
+          "as_of_date",
+          "description"
+        ],
+        "title": "SourceMetadata",
+        "description": "Metadata for upstream scholarly data authority."
+      },
+      "SourcesResponse": {
+        "properties": {
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceMetadata"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sources"
+        ],
+        "title": "SourcesResponse",
+        "description": "Transparency response listing all active data sources."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

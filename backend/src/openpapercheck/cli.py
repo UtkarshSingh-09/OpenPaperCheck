@@ -575,5 +575,93 @@ def ingest_rw(
     build_sqlite_snapshot(csv_path=csv, use_sample=sample)
 
 
+# Moderation Stub Commands (Week 4 M2 DoD)
+@app.command(name="hide")
+def hide_command(
+    doi: str = typer.Argument(..., help="DOI of the paper page to hide from public display"),
+    reason: str = typer.Option(
+        "Administrative moderation review",
+        "--reason",
+        "-r",
+        help="Reason for hiding the page (e.g., GDPR, legal take-down, dispute)",
+    ),
+):
+    """Hide a paper report from public display (moderation stub)."""
+    from openpapercheck.core.doi import normalize_doi
+    from openpapercheck.core.storage import hide_doi
+
+    canonical = normalize_doi(doi)
+    if not canonical:
+        console.print(f"[bold red]Error:[/bold red] '{doi}' is not a valid DOI format.")
+        raise typer.Exit(1)
+
+    success = hide_doi(canonical, reason=reason)
+    if success:
+        console.print(
+            Panel(
+                f"[bold yellow]PAGE HIDDEN FROM PUBLIC VIEW[/bold yellow]\n\n"
+                f"[bold]DOI:[/bold] {canonical}\n"
+                f"[bold]Reason:[/bold] {reason}\n\n"
+                f"[dim]The web interface and API will return HTTP 451 for this DOI.[/dim]",
+                title="[bold yellow]Moderation Action[/bold yellow]",
+                border_style="yellow",
+            )
+        )
+    else:
+        console.print(f"[bold red]Failed to hide DOI:[/bold red] {canonical}")
+        raise typer.Exit(1)
+
+
+@app.command(name="unhide")
+def unhide_command(
+    doi: str = typer.Argument(..., help="DOI of the paper page to unhide"),
+):
+    """Unhide a previously hidden paper report."""
+    from openpapercheck.core.doi import normalize_doi
+    from openpapercheck.core.storage import unhide_doi
+
+    canonical = normalize_doi(doi)
+    if not canonical:
+        console.print(f"[bold red]Error:[/bold red] '{doi}' is not a valid DOI format.")
+        raise typer.Exit(1)
+
+    removed = unhide_doi(canonical)
+    if removed:
+        console.print(
+            Panel(
+                f"[bold green]PAGE UNHIDDEN[/bold green]\n\n"
+                f"[bold]DOI:[/bold] {canonical}\n"
+                f"[dim]Public web interface and API access restored.[/dim]",
+                title="[bold green]Moderation Action[/bold green]",
+                border_style="green",
+            )
+        )
+    else:
+        console.print(f"[dim]DOI '{canonical}' was not currently hidden.[/dim]")
+
+
+@app.command(name="hidden")
+def list_hidden_command():
+    """List all currently hidden paper pages."""
+    from openpapercheck.core.storage import list_hidden_dois
+    from rich.table import Table
+
+    hidden_list = list_hidden_dois()
+    if not hidden_list:
+        console.print("[dim]No pages are currently hidden by moderation.[/dim]")
+        return
+
+    table = Table(title="Hidden Paper Reports (Moderation Stub)", border_style="yellow")
+    table.add_column("DOI", style="cyan", no_wrap=True)
+    table.add_column("Reason", style="white")
+    table.add_column("Hidden At (UTC)", style="dim")
+
+    for item in hidden_list:
+        table.add_row(item["doi"], item["reason"], item["hidden_at"])
+
+    console.print(table)
+
+
 if __name__ == "__main__":
     app()
+

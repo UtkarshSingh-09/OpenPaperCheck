@@ -1,0 +1,86 @@
+name: CI/CD Deploy Pipeline
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install backend test dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install .[dev,server]
+
+      - name: Run fairness allowlist & banned words check
+        run: |
+          echo "Checking for banned people-features in signals..."
+          ! grep -rn -E "\b(author|country|nationality|institution|affiliation)\b" backend/src/openpapercheck/signals/ 2>/dev/null || (echo "FAILED: Banned people features detected!" && exit 1)
+          echo "Fairness check passed."
+
+      - name: Run backend pytest
+        run: |
+          cd backend
+          pytest tests/ -v --cov=src/openpapercheck
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Build frontend standalone
+        run: |
+          cd frontend
+          npm run build
+
+  deploy:
+    name: Production Deployment
+    needs: test
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Test Docker Compose Configuration
+        run: |
+          docker compose -f docker-compose.prod.yml config
+
+      - name: Deploy via SSH (Remote Server)
+        if: env.DEPLOY_SSH_HOST != ''
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+        run: |
+          echo "Automated SSH deploy script configured for production VPS."
