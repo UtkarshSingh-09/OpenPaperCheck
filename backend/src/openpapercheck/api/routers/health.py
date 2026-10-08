@@ -8,8 +8,8 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from openpapercheck import __version__
-from openpapercheck.core.storage import get_manifest, has_snapshot
 from openpapercheck.api.schemas import HealthResponse
+from openpapercheck.core.storage import get_manifest, has_snapshot
 
 router = APIRouter(tags=["Health"])
 

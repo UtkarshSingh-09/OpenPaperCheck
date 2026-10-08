@@ -7,7 +7,6 @@ Tests both sample builds and production SQLite snapshot.
 from __future__ import annotations
 
 import sqlite3
-from pathlib import Path
 
 from openpapercheck.core.storage import get_snapshot_path, has_snapshot
 from openpapercheck.ingest.snapshot_builder import ALLOW_LISTED_COLS, build_sqlite_snapshot
@@ -29,7 +28,9 @@ BANNED_COLUMNS = {
 def test_allowlist_does_not_contain_people_features():
     """Verify that author, institution, and country are excluded from allowlist."""
     for col in ALLOW_LISTED_COLS:
-        assert col.lower() not in BANNED_COLUMNS, f"Banned column '{col}' found in ALLOW_LISTED_COLS!"
+        assert col.lower() not in BANNED_COLUMNS, (
+            f"Banned column '{col}' found in ALLOW_LISTED_COLS!"
+        )
 
 
 def test_sqlite_schema_has_no_people_columns(tmp_path, monkeypatch):
@@ -44,7 +45,9 @@ def test_sqlite_schema_has_no_people_columns(tmp_path, monkeypatch):
     conn.close()
 
     for col in columns:
-        assert col not in BANNED_COLUMNS, f"Banned column '{col}' exists in retraction_records table!"
+        assert col not in BANNED_COLUMNS, (
+            f"Banned column '{col}' exists in retraction_records table!"
+        )
 
 
 def test_production_snapshot_fairness():
@@ -73,5 +76,7 @@ def test_production_snapshot_fairness():
         "original_date",
         "notice_urls",
     }
-    assert set(columns) == allowed_db_columns, f"Unexpected columns in production snapshot: {columns}"
+    assert set(columns) == allowed_db_columns, (
+        f"Unexpected columns in production snapshot: {columns}"
+    )
     conn.close()

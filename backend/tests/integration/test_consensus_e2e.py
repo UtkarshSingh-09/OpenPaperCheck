@@ -21,12 +21,12 @@ def client_and_db(tmp_path):
     test_db_url = f"sqlite:///{tmp_path}/test_e2e.db"
     engine = create_engine(test_db_url, connect_args={"check_same_thread": False})
     Base.metadata.create_all(bind=engine)
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    session_factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     app = create_app()
 
     def override_get_db():
-        db = TestingSessionLocal()
+        db = session_factory()
         try:
             yield db
         finally:
@@ -34,11 +34,11 @@ def client_and_db(tmp_path):
 
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as client:
-        yield client, TestingSessionLocal
+        yield client, session_factory
 
 
 def test_consensus_e2e_three_reviewers_decide_task(client_and_db):
-    client, SessionLocal = client_and_db
+    client, session_factory = client_and_db
 
     # 1. Create a sample T1 task
     task_res = client.post(
@@ -120,7 +120,7 @@ def test_consensus_e2e_three_reviewers_decide_task(client_and_db):
     assert review3_data["consensus"]["method"] == "majority_3"
 
     # 5. Verify Database Records directly
-    with SessionLocal() as db:
+    with session_factory() as db:
         db_task = db.query(ReviewTask).filter(ReviewTask.id == task_id).first()
         assert db_task.status == "decided"
         assert db_task.decided_at is not None
@@ -152,7 +152,7 @@ def test_consensus_e2e_three_reviewers_decide_task(client_and_db):
 
 
 def test_gold_task_feedback_and_accuracy(client_and_db):
-    client, SessionLocal = client_and_db
+    client, session_factory = client_and_db
 
     # Create a Gold task with ground truth
     gold_res = client.post(
@@ -200,11 +200,13 @@ def test_gold_task_feedback_and_accuracy(client_and_db):
 
 
 def test_account_deletion_anonymizes_reviews(client_and_db):
-    client, SessionLocal = client_and_db
+    client, session_factory = client_and_db
 
     # User registers and logs in
     client.cookies.clear()
-    client.post("/v1/auth/login", json={"email": "delete_me@example.org", "display_name": "temp_user"})
+    client.post(
+        "/v1/auth/login", json={"email": "delete_me@example.org", "display_name": "temp_user"}
+    )
 
     # Create task and vote
     t = client.post(
@@ -234,7 +236,7 @@ def test_account_deletion_anonymizes_reviews(client_and_db):
     assert after_res.status_code == 401
 
     # Review in DB is preserved but reviewer_id is anonymized (None)
-    with SessionLocal() as db:
+    with session_factory() as db:
         rev = db.query(Review).filter(Review.task_id == t_id).first()
         assert rev is not None
         assert rev.reviewer_id is None

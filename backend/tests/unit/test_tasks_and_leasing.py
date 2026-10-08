@@ -5,11 +5,12 @@ Unit tests for review task generation, leasing, and skipping.
 from __future__ import annotations
 
 from datetime import timedelta
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from openpapercheck.server.db import Base
-from openpapercheck.server.models import ReviewTask, TaskAssignment, User
+from openpapercheck.server.models import TaskAssignment
 from openpapercheck.server.security import get_or_create_user, utcnow
 from openpapercheck.tasks.assignment import (
     cleanup_expired_leases,
@@ -24,8 +25,8 @@ def test_task_generation_and_leasing(tmp_path):
     test_db_url = f"sqlite:///{tmp_path}/test_tasks.db"
     engine = create_engine(test_db_url, connect_args={"check_same_thread": False})
     Base.metadata.create_all(bind=engine)
-    Session = sessionmaker(bind=engine)
-    db = Session()
+    session_factory = sessionmaker(bind=engine)
+    db = session_factory()
 
     # 1. Create two users
     u1 = get_or_create_user(db, "alice@example.org", "alice_rev")

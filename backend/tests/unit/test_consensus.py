@@ -5,6 +5,7 @@ Unit and property tests for the deterministic majority-of-3 consensus algorithm.
 from __future__ import annotations
 
 import itertools
+
 import pytest
 
 from openpapercheck.consensus.majority import decide
@@ -39,10 +40,10 @@ def test_decide_conclusive_majorities(votes, expected_label, expected_agree):
 @pytest.mark.parametrize(
     "votes",
     [
-        ["yes", "no", "unsure"],   # 3-way split
+        ["yes", "no", "unsure"],  # 3-way split
         ["unsure", "unsure", "yes"],  # 2 unsures
-        ["unsure", "unsure", "no"],   # 2 unsures
-        ["unsure", "unsure", "unsure"], # 3 unsures
+        ["unsure", "unsure", "no"],  # 2 unsures
+        ["unsure", "unsure", "unsure"],  # 3 unsures
     ],
 )
 def test_decide_escalates_to_senior_on_ties_or_unsure(votes):

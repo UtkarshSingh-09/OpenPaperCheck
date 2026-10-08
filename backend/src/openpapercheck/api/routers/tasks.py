@@ -6,6 +6,7 @@ Provides GET /v1/tasks/next, POST /v1/tasks/{id}/reviews, POST /v1/tasks/{id}/sk
 from __future__ import annotations
 
 from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -13,7 +14,7 @@ from sqlalchemy.orm import Session
 from openpapercheck.api.deps import get_current_user
 from openpapercheck.consensus.evaluator import submit_review
 from openpapercheck.server.db import get_db
-from openpapercheck.server.models import ReviewTask, User
+from openpapercheck.server.models import User
 from openpapercheck.tasks.assignment import get_next_task_for_reviewer, skip_assigned_task
 from openpapercheck.tasks.generators.ref_match import create_ref_match_task
 

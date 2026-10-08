@@ -4,18 +4,18 @@ and RFC 9457 HTTP 451 response from API.
 """
 
 from pathlib import Path
-import pytest
+
 from fastapi.testclient import TestClient
+from typer.testing import CliRunner
 
 from openpapercheck.api.main import create_app
+from openpapercheck.cli import app
 from openpapercheck.core.storage import (
     hide_doi,
     is_doi_hidden,
     list_hidden_dois,
     unhide_doi,
 )
-from openpapercheck.cli import app
-from typer.testing import CliRunner
 
 runner = CliRunner()
 

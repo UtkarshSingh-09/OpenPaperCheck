@@ -16,7 +16,7 @@ from pathlib import Path
 from rich.console import Console
 
 from openpapercheck.core.doi import normalize_doi
-from openpapercheck.core.storage import MANIFEST_FILE, SNAPSHOT_FILE, get_data_dir
+from openpapercheck.core.storage import get_data_dir
 
 console = Console()
 

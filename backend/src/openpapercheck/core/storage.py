@@ -14,6 +14,7 @@ from typing import Any
 
 from openpapercheck.core.doi import normalize_doi
 
+
 def get_data_dir() -> Path:
     """Return data directory, creating it if necessary."""
     data_dir = Path(os.environ.get("OPC_DATA_DIR") or Path.home() / ".cache" / "openpapercheck")
@@ -248,6 +249,7 @@ def hide_doi(doi: str, reason: str, db_path: Path | None = None) -> bool:
         return False
 
     from datetime import datetime, timezone
+
     now_iso = datetime.now(timezone.utc).isoformat()
 
     with get_connection(readonly=False, db_path=db_path) as conn:
@@ -331,13 +333,10 @@ def list_hidden_dois(db_path: Path | None = None) -> list[dict[str, str]]:
             if not cursor.fetchone():
                 return []
 
-            cursor.execute(
-                "SELECT doi, reason, hidden_at FROM hidden_dois ORDER BY hidden_at DESC"
-            )
+            cursor.execute("SELECT doi, reason, hidden_at FROM hidden_dois ORDER BY hidden_at DESC")
             return [
                 {"doi": row["doi"], "reason": row["reason"], "hidden_at": row["hidden_at"]}
                 for row in cursor.fetchall()
             ]
     except Exception:
         return []
-

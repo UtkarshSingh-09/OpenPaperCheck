@@ -6,8 +6,9 @@ Supports both PostgreSQL (production) and SQLite (local dev & testing).
 from __future__ import annotations
 
 from collections.abc import Generator
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from openpapercheck.server.settings import settings
 

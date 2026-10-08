@@ -7,13 +7,15 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any
+
 from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from openpapercheck.api.deps import get_current_user
 from openpapercheck.server.db import get_db
-from openpapercheck.server.models import AuditLog, AuthIdentity, Review, ReviewerStats, Session as UserSession, User
+from openpapercheck.server.models import AuditLog, AuthIdentity, Review, ReviewerStats, User
+from openpapercheck.server.models import Session as UserSession
 from openpapercheck.server.settings import settings
 
 router = APIRouter(prefix="/me", tags=["Reviewer Profile"])
@@ -162,9 +164,7 @@ def export_data(
             "level": user.level,
             "joined_at": user.joined_at.isoformat(),
         },
-        "identities": [
-            {"provider": i.provider, "email": i.email} for i in identities
-        ],
+        "identities": [{"provider": i.provider, "email": i.email} for i in identities],
         "stats": {
             "reviews_total": stats.reviews_total if stats else 0,
             "gold_correct": stats.gold_correct if stats else 0,

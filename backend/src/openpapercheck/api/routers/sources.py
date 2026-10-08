@@ -7,8 +7,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from openpapercheck.core.storage import get_manifest
 from openpapercheck.api.schemas import SourceMetadata, SourcesResponse
+from openpapercheck.core.storage import get_manifest
 
 router = APIRouter(tags=["Transparency"])
 

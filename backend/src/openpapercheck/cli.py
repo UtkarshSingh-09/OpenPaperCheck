@@ -29,8 +29,6 @@ from openpapercheck.core.models import (
     evaluate_citation_timing,
 )
 from openpapercheck.core.storage import (
-    MANIFEST_FILE,
-    SNAPSHOT_FILE,
     check_reference_dois,
     get_data_dir,
     get_manifest,
@@ -313,8 +311,7 @@ def check(
         )
     else:
         status_text = (
-            f"{state_badge}\n"
-            f"[bold green]No retractions or flagged references recorded[/bold green]"
+            f"{state_badge}\n[bold green]No retractions or flagged references recorded[/bold green]"
         )
 
     console.print(
@@ -326,7 +323,9 @@ def check(
     )
 
     if deposit_status == "missing":
-        console.print("[yellow]Notice:[/yellow] No references were deposited for this work in Crossref.")
+        console.print(
+            "[yellow]Notice:[/yellow] No references were deposited for this work in Crossref."
+        )
         print_freshness_footer(as_of_date, rows_count, is_sample)
         return
     elif deposit_status == "restricted":
@@ -415,7 +414,9 @@ def eval_golden(
         golden_set = json.load(f)
 
     if not has_snapshot():
-        console.print("[bold red]Error:[/bold red] No local snapshot found. Run 'opc snapshot build' first.")
+        console.print(
+            "[bold red]Error:[/bold red] No local snapshot found. Run 'opc snapshot build' first."
+        )
         raise typer.Exit(code=1)
 
     manifest = get_manifest() or {}
@@ -643,8 +644,9 @@ def unhide_command(
 @app.command(name="hidden")
 def list_hidden_command():
     """List all currently hidden paper pages."""
-    from openpapercheck.core.storage import list_hidden_dois
     from rich.table import Table
+
+    from openpapercheck.core.storage import list_hidden_dois
 
     hidden_list = list_hidden_dois()
     if not hidden_list:
@@ -664,4 +666,3 @@ def list_hidden_command():
 
 if __name__ == "__main__":
     app()
-

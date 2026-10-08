@@ -13,7 +13,6 @@ from sqlalchemy.orm import Session as DBSession
 from openpapercheck.consensus.majority import decide
 from openpapercheck.server.models import (
     ConsensusLabel,
-    GoldTask,
     Review,
     ReviewerStats,
     ReviewTask,
@@ -84,11 +83,7 @@ def submit_review(
     db.add(review)
 
     # 4. Update ReviewerStats
-    stats = (
-        db.query(ReviewerStats)
-        .filter(ReviewerStats.user_id == reviewer.id)
-        .first()
-    )
+    stats = db.query(ReviewerStats).filter(ReviewerStats.user_id == reviewer.id).first()
     if not stats:
         stats = ReviewerStats(user_id=reviewer.id)
         db.add(stats)
@@ -125,11 +120,7 @@ def submit_review(
         task.decided_at = utcnow()
 
         # Write or update consensus label
-        label = (
-            db.query(ConsensusLabel)
-            .filter(ConsensusLabel.task_id == task.id)
-            .first()
-        )
+        label = db.query(ConsensusLabel).filter(ConsensusLabel.task_id == task.id).first()
         if not label:
             label = ConsensusLabel(
                 task_id=task.id,
@@ -148,9 +139,7 @@ def submit_review(
         for r in all_reviews:
             if r.reviewer_id:
                 r_stats = (
-                    db.query(ReviewerStats)
-                    .filter(ReviewerStats.user_id == r.reviewer_id)
-                    .first()
+                    db.query(ReviewerStats).filter(ReviewerStats.user_id == r.reviewer_id).first()
                 )
                 if r_stats:
                     r_stats.decided_seen += 1

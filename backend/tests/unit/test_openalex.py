@@ -71,9 +71,9 @@ def test_openalex_get_work_quota_exceeded():
     doi = "10.1000/some-doi"
 
     respx.get(f"https://api.openalex.org/works/https://doi.org/{doi}").respond(
-        status_code=429, json={"error": "Daily quota exceeded", "message": "API key daily limit reached"}
+        status_code=429,
+        json={"error": "Daily quota exceeded", "message": "API key daily limit reached"},
     )
 
     work = client.get_work(doi)
     assert work is None
-

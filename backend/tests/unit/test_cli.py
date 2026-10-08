@@ -9,7 +9,6 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
-from pathlib import Path
 
 import httpx
 import respx
@@ -284,7 +283,9 @@ def test_cli_check_no_internet_connection(tmp_path, monkeypatch):
 
     doi = "10.1038/nature12373"
     respx.get(f"https://api.crossref.org/works/{doi}").mock(
-        side_effect=httpx.ConnectError("Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known")
+        side_effect=httpx.ConnectError(
+            "Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known"
+        )
     )
 
     result = runner.invoke(app, ["check", doi])
@@ -361,6 +362,7 @@ def test_cli_check_reference_with_correction_not_flagged(tmp_path, monkeypatch):
     build_sqlite_snapshot(use_sample=True)
 
     import sqlite3
+
     db_file = tmp_path / "retraction_records.sqlite"
     with sqlite3.connect(db_file) as conn:
         conn.execute(
@@ -404,6 +406,7 @@ def test_cli_check_reinstatement_not_flagged(tmp_path, monkeypatch):
     build_sqlite_snapshot(use_sample=True)
 
     import sqlite3
+
     db_file = tmp_path / "retraction_records.sqlite"
     with sqlite3.connect(db_file) as conn:
         conn.execute(
@@ -433,7 +436,9 @@ def test_cli_check_reinstatement_not_flagged(tmp_path, monkeypatch):
             ],
         },
     }
-    respx.get(f"https://api.crossref.org/works/{doi_citing}").respond(status_code=200, json=mock_payload_citing)
+    respx.get(f"https://api.crossref.org/works/{doi_citing}").respond(
+        status_code=200, json=mock_payload_citing
+    )
 
     res_citing = runner.invoke(app, ["check", doi_citing])
     assert res_citing.exit_code == 0
@@ -460,7 +465,9 @@ def test_cli_check_reinstatement_not_flagged(tmp_path, monkeypatch):
             ],
         },
     }
-    respx.get(f"https://api.crossref.org/works/{doi_reinstated}").respond(status_code=200, json=mock_payload_target)
+    respx.get(f"https://api.crossref.org/works/{doi_reinstated}").respond(
+        status_code=200, json=mock_payload_target
+    )
 
     res_target = runner.invoke(app, ["check", doi_reinstated])
     assert res_target.exit_code == 0
@@ -476,6 +483,7 @@ def test_opc_ingest_rw_idempotency(tmp_path, monkeypatch):
     prevent duplicate rows, enforce primary key uniqueness, and yield identical checksums.
     """
     import sqlite3
+
     monkeypatch.setenv("OPC_DATA_DIR", str(tmp_path))
 
     # Run 1: Initial ingest
@@ -490,7 +498,9 @@ def test_opc_ingest_rw_idempotency(tmp_path, monkeypatch):
 
     with sqlite3.connect(db_path) as conn:
         count_1 = conn.execute("SELECT count(*) FROM retraction_records").fetchone()[0]
-        distinct_ids_1 = conn.execute("SELECT count(DISTINCT rw_record_id) FROM retraction_records").fetchone()[0]
+        distinct_ids_1 = conn.execute(
+            "SELECT count(DISTINCT rw_record_id) FROM retraction_records"
+        ).fetchone()[0]
 
     manifest_1 = json.loads(manifest_path.read_text(encoding="utf-8"))
 
@@ -501,14 +511,17 @@ def test_opc_ingest_rw_idempotency(tmp_path, monkeypatch):
 
     with sqlite3.connect(db_path) as conn:
         count_2 = conn.execute("SELECT count(*) FROM retraction_records").fetchone()[0]
-        distinct_ids_2 = conn.execute("SELECT count(DISTINCT rw_record_id) FROM retraction_records").fetchone()[0]
+        distinct_ids_2 = conn.execute(
+            "SELECT count(DISTINCT rw_record_id) FROM retraction_records"
+        ).fetchone()[0]
 
     manifest_2 = json.loads(manifest_path.read_text(encoding="utf-8"))
 
     # Assert exact idempotency
     assert count_1 == count_2, f"Row count changed after repeated ingest: {count_1} != {count_2}"
+    assert distinct_ids_1 == distinct_ids_2, "Distinct IDs changed across ingest runs"
     assert count_2 == distinct_ids_2, "Duplicate records were introduced during re-ingest"
-    assert manifest_1["sha256"] == manifest_2["sha256"], "Database checksum differed across identical ingest runs"
+    assert manifest_1["sha256"] == manifest_2["sha256"], (
+        "Database checksum differed across identical ingest runs"
+    )
     assert manifest_1["rows_count"] == manifest_2["rows_count"]
-
-

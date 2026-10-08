@@ -114,8 +114,8 @@ def test_crossref_client_polite_pool_headers():
 @respx.mock
 def test_crossref_client_handles_rate_limiting_429():
     """Verify Crossref client raises HTTPStatusError when encountering HTTP 429 rate limit."""
-    import pytest
     import httpx
+    import pytest
 
     client = CrossrefClient()
     doi = "10.1038/rate-limited"
@@ -127,4 +127,3 @@ def test_crossref_client_handles_rate_limiting_429():
     with pytest.raises(httpx.HTTPStatusError) as exc_info:
         client.get_work(doi)
     assert exc_info.value.response.status_code == 429
-

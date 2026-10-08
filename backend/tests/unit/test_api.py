@@ -181,4 +181,6 @@ def test_api_ethics_banned_words_compliance():
 
     banned_words = ["fake", "fraud", "scam", "cheat", "guilty"]
     for word in banned_words:
-        assert f" {word} " not in text_content, f"Banned subjective word '{word}' found in API response!"
+        assert f" {word} " not in text_content, (
+            f"Banned subjective word '{word}' found in API response!"
+        )

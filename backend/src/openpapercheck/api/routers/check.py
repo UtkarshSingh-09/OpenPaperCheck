@@ -9,23 +9,6 @@ from __future__ import annotations
 import httpx
 from fastapi import APIRouter, Query
 
-from openpapercheck import __version__
-from openpapercheck.core.crossref import CrossrefClient
-from openpapercheck.core.doi import is_valid_doi, normalize_doi
-from openpapercheck.core.models import (
-    CitationTiming,
-    PaperPublicState,
-    determine_paper_state,
-    evaluate_citation_timing,
-)
-from openpapercheck.core.storage import (
-    check_reference_dois,
-    get_manifest,
-    get_retraction,
-    has_snapshot,
-    is_doi_hidden,
-)
-from openpapercheck.signals.registry import compute_signals
 from openpapercheck.api.errors import (
     DoiNotFoundError,
     InvalidDoiError,
@@ -39,6 +22,21 @@ from openpapercheck.api.schemas import (
     ReferenceBreakdown,
     RetractedRefInfo,
 )
+from openpapercheck.core.crossref import CrossrefClient
+from openpapercheck.core.doi import is_valid_doi, normalize_doi
+from openpapercheck.core.models import (
+    PaperPublicState,
+    determine_paper_state,
+    evaluate_citation_timing,
+)
+from openpapercheck.core.storage import (
+    check_reference_dois,
+    get_manifest,
+    get_retraction,
+    has_snapshot,
+    is_doi_hidden,
+)
+from openpapercheck.signals.registry import compute_signals
 
 router = APIRouter(tags=["Check"])
 
@@ -78,9 +76,13 @@ async def check_paper(
     try:
         work = client.get_work(canonical_doi)
     except httpx.TimeoutException as exc:
-        raise UpstreamServiceError("Crossref API", "Connection timed out querying Crossref.") from exc
+        raise UpstreamServiceError(
+            "Crossref API", "Connection timed out querying Crossref."
+        ) from exc
     except httpx.RequestError as exc:
-        raise UpstreamServiceError("Crossref API", f"Network error reaching api.crossref.org: {exc}") from exc
+        raise UpstreamServiceError(
+            "Crossref API", f"Network error reaching api.crossref.org: {exc}"
+        ) from exc
     except Exception as exc:
         raise UpstreamServiceError("Crossref API", str(exc)) from exc
 
@@ -162,7 +164,9 @@ async def check_paper(
         "crossref": "live-api",
     }
     if is_sample:
-        data_as_of_map["sample_mode_notice"] = f"{rows_count or 11} test records only (run opc update for full database)"
+        data_as_of_map["sample_mode_notice"] = (
+            f"{rows_count or 11} test records only (run opc update for full database)"
+        )
 
     # PubPeer search link
     pubpeer_url = f"https://pubpeer.com/search?q={canonical_doi}"

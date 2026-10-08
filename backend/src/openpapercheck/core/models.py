@@ -84,7 +84,11 @@ def evaluate_citation_timing(
     Returns:
         CitationTiming: CITED_AFTER_RETRACTION, CITED_BEFORE_RETRACTION, or UNKNOWN
     """
-    if not pub_date or not retraction_date or retraction_date.strip().lower() in ("date unknown", "unknown", ""):
+    if (
+        not pub_date
+        or not retraction_date
+        or retraction_date.strip().lower() in ("date unknown", "unknown", "")
+    ):
         return CitationTiming.UNKNOWN
 
     clean_pub = pub_date.strip()

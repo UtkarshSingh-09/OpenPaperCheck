@@ -4,10 +4,10 @@ FastAPI Application Factory for OpenPaperCheck REST API.
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from contextlib import asynccontextmanager
 
 from openpapercheck import __version__
 from openpapercheck.api.errors import register_error_handlers

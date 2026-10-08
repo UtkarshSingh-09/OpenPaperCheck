@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import re
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+
+from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 

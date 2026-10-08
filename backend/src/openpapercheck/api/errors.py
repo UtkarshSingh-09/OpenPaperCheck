@@ -20,7 +20,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 PROBLEM_JSON_CONTENT_TYPE = "application/problem+json"
 
 
-class APIProblemException(Exception):
+class APIProblemError(Exception):
     """Base exception for all domain problem errors."""
 
     def __init__(
@@ -37,12 +37,16 @@ class APIProblemException(Exception):
         self.problem_type = problem_type
 
 
-class InvalidDoiError(APIProblemException):
+APIProblemException = APIProblemError
+
+
+class InvalidDoiError(APIProblemError):
     def __init__(self, doi: str, detail: str | None = None):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
             title="Invalid DOI Syntax",
-            detail=detail or f"'{doi}' is not a valid DOI format. Standard DOIs begin with '10.' followed by registrant code.",
+            detail=detail
+            or f"'{doi}' is not a valid DOI format. Standard DOIs begin with '10.' followed by registrant code.",
             problem_type="https://openpapercheck.org/problems/invalid-doi",
         )
 
@@ -52,7 +56,8 @@ class DoiNotFoundError(APIProblemException):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             title="DOI Not Found",
-            detail=detail or f"DOI '{doi}' was not found in Crossref or upstream scholarly registries.",
+            detail=detail
+            or f"DOI '{doi}' was not found in Crossref or upstream scholarly registries.",
             problem_type="https://openpapercheck.org/problems/doi-not-found",
         )
 
@@ -80,8 +85,8 @@ class UpstreamServiceError(APIProblemException):
 def register_error_handlers(app: FastAPI) -> None:
     """Register RFC 9457 problem+json error handlers on FastAPI application."""
 
-    @app.exception_handler(APIProblemException)
-    async def problem_exception_handler(request: Request, exc: APIProblemException) -> JSONResponse:
+    @app.exception_handler(APIProblemError)
+    async def problem_exception_handler(request: Request, exc: APIProblemError) -> JSONResponse:
         return JSONResponse(
             status_code=exc.status_code,
             media_type=PROBLEM_JSON_CONTENT_TYPE,
@@ -115,9 +120,11 @@ def register_error_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
         errors = exc.errors()
-        error_details = "; ".join(f"{e.get('loc', [''])[ -1]}: {e.get('msg', '')}" for e in errors)
+        error_details = "; ".join(f"{e.get('loc', [''])[-1]}: {e.get('msg', '')}" for e in errors)
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             media_type=PROBLEM_JSON_CONTENT_TYPE,

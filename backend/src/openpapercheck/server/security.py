@@ -78,11 +78,7 @@ def get_user_from_session(db: DBSession, raw_token: str | None) -> User | None:
     if not session_record:
         return None
 
-    user = (
-        db.query(User)
-        .filter(User.id == session_record.user_id, User.status == "active")
-        .first()
-    )
+    user = db.query(User).filter(User.id == session_record.user_id, User.status == "active").first()
     if user:
         # Refresh last active timestamp
         user.last_active_at = utcnow()

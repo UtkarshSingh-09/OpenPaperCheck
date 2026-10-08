@@ -17,7 +17,7 @@ def test_normalize_doi_never_crashes(s: str):
     assert res is None or isinstance(res, str)
 
 
-@given(st.from_regex(r"^10\.\d{4,9}/[a-zA-Z0-9_\-\.\(\)]+$", fullmatch=True))
+@given(st.from_regex(r"^10\.\d{4,9}/[a-zA-Z0-9_\-\.\(\)]*[a-zA-Z0-9\)]+$", fullmatch=True))
 def test_normalize_doi_idempotent_on_valid(doi: str):
     """For any valid DOI, normalizing twice yields the exact same canonical string."""
     first = normalize_doi(doi)

@@ -103,7 +103,9 @@ def test_golden_dois_against_storage(tmp_path: Path):
             for r in item.get("reasons", []):
                 assert any(r.lower() in stored_r.lower() for stored_r in rec["reasons"])
         elif is_eoc:
-            assert rec is not None, f"Expected {doi} to be flagged with Expression of concern, but was not found."
+            assert rec is not None, (
+                f"Expected {doi} to be flagged with Expression of concern, but was not found."
+            )
             assert rec["doi"].lower() == doi.lower()
             assert rec["nature"] == "Expression of concern"
             for r in item.get("reasons", []):
@@ -147,7 +149,9 @@ def test_golden_dois_citation_timing():
     assert evaluate_citation_timing("2021-04-01", ret_date) == CitationTiming.CITED_AFTER_RETRACTION
 
     # Case B: Paper published in 2008 citing Wakefield
-    assert evaluate_citation_timing("2008-04-12", ret_date) == CitationTiming.CITED_BEFORE_RETRACTION
+    assert (
+        evaluate_citation_timing("2008-04-12", ret_date) == CitationTiming.CITED_BEFORE_RETRACTION
+    )
 
     # Case C: Unknown / missing date
     assert evaluate_citation_timing(None, ret_date) == CitationTiming.UNKNOWN
@@ -307,9 +311,15 @@ def test_eoc_only_reference_policy_enforcement(tmp_path: Path):
 
     # 3. Citation timing relative to EOC notice date
     # Paper published in 2021 (after EOC)
-    assert evaluate_citation_timing("2021-01-01", rec["retraction_date"]) == CitationTiming.CITED_AFTER_RETRACTION
+    assert (
+        evaluate_citation_timing("2021-01-01", rec["retraction_date"])
+        == CitationTiming.CITED_AFTER_RETRACTION
+    )
     # Paper published in 2018 (before EOC)
-    assert evaluate_citation_timing("2018-01-01", rec["retraction_date"]) == CitationTiming.CITED_BEFORE_RETRACTION
+    assert (
+        evaluate_citation_timing("2018-01-01", rec["retraction_date"])
+        == CitationTiming.CITED_BEFORE_RETRACTION
+    )
 
     # Phase 2: Later, the publisher issues a full formal Retraction (2022-08-15)
     c.execute(

@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session as DBSession
 
-from openpapercheck.server.models import Review, ReviewTask, TaskAssignment, User
+from openpapercheck.server.models import ReviewTask, TaskAssignment, User
 from openpapercheck.server.settings import settings
 
 
@@ -33,7 +33,9 @@ def cleanup_expired_leases(db: DBSession) -> int:
     return len(expired)
 
 
-def get_next_task_for_reviewer(db: DBSession, user: User) -> tuple[ReviewTask | None, TaskAssignment | None]:
+def get_next_task_for_reviewer(
+    db: DBSession, user: User
+) -> tuple[ReviewTask | None, TaskAssignment | None]:
     """
     Find and lease the highest-priority pending task suitable for this reviewer.
 

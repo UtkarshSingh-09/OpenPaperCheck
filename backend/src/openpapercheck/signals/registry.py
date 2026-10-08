@@ -8,9 +8,10 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Any
+
 from pydantic import BaseModel, Field
 
-from openpapercheck.core.models import CitationTiming, evaluate_citation_timing
+from openpapercheck.core.models import evaluate_citation_timing
 
 
 class SignalId(str, Enum):
@@ -55,16 +56,18 @@ def compute_signals(
     is_retracted = nature.lower() == "retraction"
     s001_evidence: list[dict[str, Any]] = []
     if is_retracted and paper_retraction:
-        s001_evidence.append({
-            "source": "Retraction Watch",
-            "rw_record_id": paper_retraction.get("rw_record_id"),
-            "nature": paper_retraction.get("nature"),
-            "retraction_date": paper_retraction.get("retraction_date"),
-            "original_date": paper_retraction.get("original_date"),
-            "notice_doi": paper_retraction.get("retraction_doi"),
-            "reasons": paper_retraction.get("reasons", []),
-            "notice_urls": paper_retraction.get("notice_urls", ""),
-        })
+        s001_evidence.append(
+            {
+                "source": "Retraction Watch",
+                "rw_record_id": paper_retraction.get("rw_record_id"),
+                "nature": paper_retraction.get("nature"),
+                "retraction_date": paper_retraction.get("retraction_date"),
+                "original_date": paper_retraction.get("original_date"),
+                "notice_doi": paper_retraction.get("retraction_doi"),
+                "reasons": paper_retraction.get("reasons", []),
+                "notice_urls": paper_retraction.get("notice_urls", ""),
+            }
+        )
     signals.append(
         Signal(
             id=SignalId.S_001,
@@ -86,14 +89,16 @@ def compute_signals(
     is_eoc = nature.lower() == "expression of concern"
     s002_evidence: list[dict[str, Any]] = []
     if is_eoc and paper_retraction:
-        s002_evidence.append({
-            "source": "Retraction Watch",
-            "rw_record_id": paper_retraction.get("rw_record_id"),
-            "nature": "Expression of concern",
-            "retraction_date": paper_retraction.get("retraction_date"),
-            "notice_doi": paper_retraction.get("retraction_doi"),
-            "reasons": paper_retraction.get("reasons", []),
-        })
+        s002_evidence.append(
+            {
+                "source": "Retraction Watch",
+                "rw_record_id": paper_retraction.get("rw_record_id"),
+                "nature": "Expression of concern",
+                "retraction_date": paper_retraction.get("retraction_date"),
+                "notice_doi": paper_retraction.get("retraction_doi"),
+                "reasons": paper_retraction.get("reasons", []),
+            }
+        )
     signals.append(
         Signal(
             id=SignalId.S_002,
@@ -114,14 +119,16 @@ def compute_signals(
     is_correction = nature.lower() in ("correction", "reinstatement")
     s003_evidence: list[dict[str, Any]] = []
     if is_correction and paper_retraction:
-        s003_evidence.append({
-            "source": "Retraction Watch",
-            "rw_record_id": paper_retraction.get("rw_record_id"),
-            "nature": nature,
-            "date": paper_retraction.get("retraction_date"),
-            "notice_doi": paper_retraction.get("retraction_doi"),
-            "reasons": paper_retraction.get("reasons", []),
-        })
+        s003_evidence.append(
+            {
+                "source": "Retraction Watch",
+                "rw_record_id": paper_retraction.get("rw_record_id"),
+                "nature": nature,
+                "date": paper_retraction.get("retraction_date"),
+                "notice_doi": paper_retraction.get("retraction_doi"),
+                "reasons": paper_retraction.get("reasons", []),
+            }
+        )
     signals.append(
         Signal(
             id=SignalId.S_003,
@@ -147,15 +154,17 @@ def compute_signals(
             info = retracted_refs_map[r_doi]
             ret_date = info.get("retraction_date") or ""
             timing = evaluate_citation_timing(pub_date, ret_date)
-            s010_evidence.append({
-                "reference_doi": r_doi,
-                "position": r.get("position"),
-                "retraction_date": ret_date,
-                "nature": info.get("nature", "Retraction"),
-                "timing": timing.value,
-                "rw_record_id": info.get("rw_record_id"),
-                "reasons": info.get("reasons", []),
-            })
+            s010_evidence.append(
+                {
+                    "reference_doi": r_doi,
+                    "position": r.get("position"),
+                    "retraction_date": ret_date,
+                    "nature": info.get("nature", "Retraction"),
+                    "timing": timing.value,
+                    "rw_record_id": info.get("rw_record_id"),
+                    "reasons": info.get("reasons", []),
+                }
+            )
 
     s010_desc = (
         f"{retracted_refs_count} of {len(with_doi)} references with DOIs are recorded as retracted."
@@ -163,7 +172,9 @@ def compute_signals(
         else f"0 of {len(with_doi)} references with DOIs are recorded as retracted."
     )
     if without_doi:
-        s010_desc += f" {len(without_doi)} unstructured references without DOIs could not be checked."
+        s010_desc += (
+            f" {len(without_doi)} unstructured references without DOIs could not be checked."
+        )
 
     signals.append(
         Signal(
@@ -195,11 +206,13 @@ def compute_signals(
                 f"Publisher reference deposit status: '{deposit_status}'. "
                 f"Checked {len(with_doi)} DOI references out of {total_listed} total listed."
             ),
-            evidence=[{
-                "provider": "Crossref",
-                "deposit_status": deposit_status,
-                "has_references": bool(with_doi or without_doi),
-            }],
+            evidence=[
+                {
+                    "provider": "Crossref",
+                    "deposit_status": deposit_status,
+                    "has_references": bool(with_doi or without_doi),
+                }
+            ],
         )
     )
 

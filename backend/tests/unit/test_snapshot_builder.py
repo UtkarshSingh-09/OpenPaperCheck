@@ -12,14 +12,10 @@ import json
 import sqlite3
 from pathlib import Path
 
-import pytest
-
 from openpapercheck.ingest.snapshot_builder import (
-    ALLOW_LISTED_COLS,
     build_sqlite_snapshot,
     normalize_date,
 )
-
 
 # --- Date Normalization Tests ---
 
@@ -148,8 +144,24 @@ def test_build_sqlite_snapshot_from_csv(tmp_path: Path, monkeypatch):
         [
             "not-an-id",  # Invalid record ID - should be skipped safely
             "Malformed Row",
-            "", "", "", "", "", "", "", "",
-            "1/1/2020", "", "", "1/1/2019", "10.1000/malformed", "", "Retraction", "", "", ""
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "1/1/2020",
+            "",
+            "",
+            "1/1/2019",
+            "10.1000/malformed",
+            "",
+            "Retraction",
+            "",
+            "",
+            "",
         ],
     ]
 
@@ -175,7 +187,9 @@ def test_build_sqlite_snapshot_from_csv(tmp_path: Path, monkeypatch):
         assert b not in col_names, f"Banned column '{b}' found in SQLite schema!"
 
     # Verify inserted records
-    cursor.execute("SELECT rw_record_id, original_doi, retraction_date, original_date, reasons FROM retraction_records ORDER BY rw_record_id;")
+    cursor.execute(
+        "SELECT rw_record_id, original_doi, retraction_date, original_date, reasons FROM retraction_records ORDER BY rw_record_id;"
+    )
     records = cursor.fetchall()
     conn.close()
 
@@ -230,16 +244,18 @@ def test_snapshot_builder_batch_flush(tmp_path: Path, monkeypatch):
         writer = csv.writer(f)
         writer.writerow(headers)
         for i in range(5005):
-            writer.writerow([
-                i + 1,
-                f"10.1000/batch-doi-{i}",
-                f"10.1000/ret-doi-{i}",
-                "Retraction",
-                "Falsification of Data",
-                "2020-01-01",
-                "2018-01-01",
-                "https://example.com/notice",
-            ])
+            writer.writerow(
+                [
+                    i + 1,
+                    f"10.1000/batch-doi-{i}",
+                    f"10.1000/ret-doi-{i}",
+                    "Retraction",
+                    "Falsification of Data",
+                    "2020-01-01",
+                    "2018-01-01",
+                    "https://example.com/notice",
+                ]
+            )
 
     sqlite_path = build_sqlite_snapshot(csv_path=large_csv)
     assert sqlite_path.is_file()
