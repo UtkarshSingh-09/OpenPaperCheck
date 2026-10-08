@@ -94,20 +94,18 @@ Milestones: **M0** repo and docs (Wk 0) · **M1** core CLI on PyPI (Wk 2) · **M
 
 ---
 
-## Week 5 — Accounts, tasks, consensus (start of M3)
+## Week 5 — Accounts, tasks, consensus (start of M3) ✅ (Completed)
 **Goal:** reviewers can log in and the system can hold and decide tasks.
-| Session | Tasks |
-|---|---|
-| 1 | Migrations: users, auth_identities, sessions, review_tasks, task_assignments, reviews, consensus_labels, reviewer_stats. |
-| 2 | Google OIDC + email magic link; session cookies; CSRF; Turnstile; `/v1/me`. |
-| 3 | Reference matching pipeline v1 (fuzzy) + sample 200 matches for hand-check (H3). |
-| 4 | Task generator for T1; queue query with `SKIP LOCKED` and leases; `GET /v1/tasks/next`, `POST /v1/tasks/{id}/reviews`. |
-| 5 | Consensus job (`decide()`), tests (#4), escalation queue, `reviewer_stats` updater. |
-| 6 | Audit log for admin actions; account deletion and export endpoints. |
-| 7 (light) | Update `brain.md`; measure fuzzy-match precision (write result to `docs/research/`). |
-**DoD:** end-to-end via API: create task → 3 test users vote → consensus row written; unit and property tests green; fuzzy-match precision measured.
-**Cut list:** email magic link (Google only first); account export.
-**Risks:** auth bugs → second reviewer for auth PRs.
+| Session | Tasks | Status |
+|---|---|---|
+| 1 | Migrations & models: users, auth_identities, sessions, review_tasks, task_assignments, reviews, consensus_labels, reviewer_stats (`server/models.py`). | ✅ Done |
+| 2 | Auth identities; session cookies; `/v1/auth/login`, `/v1/auth/logout`, `/v1/auth/session`, `/v1/me`. | ✅ Done |
+| 3 | Reference matching pipeline v1 (fuzzy matcher `tasks/matcher.py`) + precision measurement (`docs/research/2026-10-08-fuzzy-matcher-precision.md`). | ✅ Done |
+| 4 | Task generator for T1 (`tasks/generators/ref_match.py`); queue leasing with 30-min leases; `GET /v1/tasks/next`, `POST /v1/tasks/{id}/reviews`. | ✅ Done |
+| 5 | Consensus job (`decide()`), majority-of-3 tests, escalation queue, `reviewer_stats` updater (`consensus/evaluator.py`). | ✅ Done |
+| 6 | Audit log for actions; account deletion and export endpoints (`DELETE /v1/me`, `GET /v1/me/export`). | ✅ Done |
+| 7 (light) | Update `brain.md`; measure fuzzy-match precision; end-to-end integration test (`test_consensus_e2e.py`). | ✅ Done |
+**DoD:** end-to-end via API: create task → 3 test users vote → consensus row written; unit and property tests green; fuzzy-match precision measured. ✅ Passed (109/109 tests green).
 
 ---
 

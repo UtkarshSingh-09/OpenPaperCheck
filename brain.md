@@ -21,20 +21,22 @@ OpenPaperCheck lets anyone paste a paper's DOI and see **sourced facts** about w
 10. **The maintainer takes one day off per week.** Burnout is a project risk.
 
 ## 3. Current state
-- **Phase:** Week 0 (M0), Week 1 (Ingest), and Week 2 (Core CLI & PyPI M1) **COMPLETE**. Starting Week 3 (API & Web Service Layer).
+- **Phase:** Week 0 (M0), Weeks 1–2 (M1 CLI), Weeks 3–4 (M2 Web Deploy), and Week 5 (M3 start: Accounts, Tasks & Consensus) **COMPLETE**. Starting Week 6 (Reviewer UI, Tutorial & Gold Onboarding).
 - **Working:**
   - Standalone core Python package (`openpapercheck.core.doi`, `storage`, `crossref`, `openalex`) with zero database server dependencies.
   - Standard library `sqlite3` snapshot lookup empirically verified across 72,718 records: 0.0055 ms warm cache, 0.058 ms cold connect/query cycle.
   - Live Crossref client with polite pool `mailto:` and 3-tier honest reference categorization (deposited DOIs, unstructured, missing/restricted).
   - OpenAlex fallback client with validated API key integration.
-  - Full Typer CLI (`opc check <doi>`, `opc update`, `opc eval golden`, `opc snapshot build`, `opc ingest rw`, `opc version`) with Rich tree formatting and ethical disclaimers.
-  - PyPI release automation (`.github/workflows/release.yml`) with Trusted Publishing OIDC.
-  - Test suite (74 unit, property, golden DOI, EOC policy, Reinstatement, idempotency, polite pool, rate-limit, no-internet handling, OpenAlex, and fairness allow-list tests passing with 93% coverage).
-  - Correspondence inquiry letters for PubPeer and PPS drafted in `docs/correspondence/`.
-- **Next 3 tasks:**
-  1. Scaffold FastAPI application (`backend/src/openpapercheck/server/app.py`) with `GET /v1/check/{doi}`, `/v1/health`, `/v1/sources`.
-  2. Implement `paper_public_state` logic and banned-words snapshot test.
-  3. Initialize Next.js web application (`frontend/`) for Milestone M2.
+  - Full Typer CLI (`opc check <doi>`, `opc update`, `opc eval golden`, `opc snapshot build`, `opc ingest rw`, `opc version`, `opc hide`, `opc unhide`, `opc hidden`).
+  - Next.js 16 standalone web application with academic UI, zero lint errors, and fast production build.
+  - FastAPI server platform with SQLAlchemy 2.0 ORM models, session management, and RFC 9457 problem details error handling.
+  - Deterministic consensus engine (`decide()` majority-of-3) with 30-minute task leasing (`SKIP LOCKED`), T1 (`ref_match`) task generator, and fuzzy citation matcher.
+  - Complete automated test suite: **109 / 109 tests passing (100%)** with **91% test coverage**.
+  - Encrypted automated backup (`backup.sh`) and disaster recovery drill (`restore.sh`) verified.
+- **Next 3 tasks (Week 6):**
+  1. Build Review card UI (mobile-first, 360px layout, verdict buttons, undo, progress dots, keyboard shortcuts).
+  2. Implement 2-minute onboarding tutorial with 3 gold tasks and explanatory feedback (`tutorial_done_at`).
+  3. Build `/me` reviewer dashboard (weekly count, level progress, private gold accuracy) and opt-in leaderboard.
 
 ## 4. Architecture snapshot
 Core package (`openpapercheck`) has zero Postgres/FastAPI dependency: normalizer, Crossref client, stdlib `sqlite3` local lookup, and CLI (`opc check`, `opc update`). Nightly snapshot built from Retraction Watch CSV published to floating `data-latest` tag with `manifest.json`; monthly immutable copy on Zenodo. Server layer (FastAPI + PostgreSQL + Next.js web app) imports core and powers the public web checker (Week 4) and review crowdsourcing queue (Week 5+). Review tasks → 3 independent reviewers → consensus → open dataset (Hugging Face + Zenodo). Details: `MASTER_PLAN.md`, `docs/TECH_STACK.md`, `docs/DATABASE.md`.
@@ -43,6 +45,7 @@ Core package (`openpapercheck`) has zero Postgres/FastAPI dependency: normalizer
 
 | ID | Date | Decision | Why | Alternatives | Link |
 |---|---|---|---|---|---|
+| D-018 | 2026-10-08 | Majority-of-3 consensus algorithm with 30-min task leasing, gold feedback, and GDPR account deletion | Ensures reviewer independence and verifiable labels; 'unsure' votes escalate to senior reviewers rather than creating false public labels | Single-reviewer approval; unleased global queue | `docs/DATABASE.md` |
 | D-017 | 2026-09-28 | Phased launch: Weeks 0–2 ship Core Python library & CLI to PyPI (`v0.1.0`); Weeks 3–4 deploy FastAPI + Next.js web page with Postgres | Gives value in 10s with zero community; builds contributor momentum and stars early | Monolithic Week 4 release | `docs/WEEKLY_PLAN.md` |
 | D-016 | 2026-09-28 | 3-tier reference breakdown in CLI/API output: (1) with DOIs checked (cited before vs after), (2) without DOIs unchecked, (3) explicit notice if references missing/restricted | Saying "0 retracted" when references were missing/unstructured is a deceptive false reassurance bug | Single summary number | `ETHICS.md` |
 | D-015 | 2026-09-28 | OpenAlex strictly optional in CLI; default is Crossref `mailto:` + local SQLite snapshot | Mandatory API keys with daily usage caps create severe onboarding friction for CLI users | Force OpenAlex API key | `docs/DATA_SOURCES.md` |

@@ -7,9 +7,19 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from contextlib import asynccontextmanager
+
 from openpapercheck import __version__
 from openpapercheck.api.errors import register_error_handlers
-from openpapercheck.api.routers import check, health, sources
+from openpapercheck.api.routers import auth, check, health, me, sources, tasks
+from openpapercheck.server.db import init_db
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Ensure all server tables are created
+    init_db()
+    yield
 
 
 def create_app() -> FastAPI:
@@ -23,6 +33,7 @@ def create_app() -> FastAPI:
             "with zero personal profiling and verifiable external authority links."
         ),
         version=__version__,
+        lifespan=lifespan,
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
@@ -57,6 +68,9 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix="/v1")
     app.include_router(sources.router, prefix="/v1")
     app.include_router(check.router, prefix="/v1")
+    app.include_router(auth.router, prefix="/v1")
+    app.include_router(me.router, prefix="/v1")
+    app.include_router(tasks.router, prefix="/v1")
 
     # Root redirect / status
     @app.get("/", include_in_schema=False)
