@@ -54,7 +54,7 @@ def get_next_task_for_reviewer(
         TaskAssignment.status.in_(["assigned", "done", "skipped"]),
     )
 
-    candidate_tasks = (
+    query = (
         db.query(ReviewTask)
         .filter(
             ReviewTask.status.in_(["open", "in_review"]),
@@ -63,8 +63,12 @@ def get_next_task_for_reviewer(
         )
         .order_by(ReviewTask.priority.desc(), ReviewTask.created_at.asc())
         .limit(20)
-        .all()
     )
+    # Use row-level locking with SKIP LOCKED on PostgreSQL to prevent concurrency race conditions
+    if db.bind and getattr(db.bind.dialect, "name", "") == "postgresql":
+        query = query.with_for_update(skip_locked=True)
+
+    candidate_tasks = query.all()
 
     for task in candidate_tasks:
         # Check active non-expired assignments + completed reviews

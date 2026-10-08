@@ -68,6 +68,7 @@ class CitationTiming(str, Enum):
     CITED_AFTER_RETRACTION = "cited_after_retraction"
     CITED_BEFORE_RETRACTION = "cited_before_retraction"
     UNKNOWN = "unknown"
+    UNKNOWN_TIMING = "unknown_timing"
 
 
 def evaluate_citation_timing(
@@ -99,7 +100,9 @@ def evaluate_citation_timing(
     if len(clean_pub) >= 10 and len(clean_ret) >= 10:
         if clean_pub[:10] > clean_ret[:10]:
             return CitationTiming.CITED_AFTER_RETRACTION
-        return CitationTiming.CITED_BEFORE_RETRACTION
+        elif clean_pub[:10] < clean_ret[:10]:
+            return CitationTiming.CITED_BEFORE_RETRACTION
+        return CitationTiming.UNKNOWN
 
     # Partial date comparison (e.g. year-only '2021' vs '2020-06-05')
     comp_len = min(len(clean_pub), len(clean_ret), 10)
@@ -108,6 +111,6 @@ def evaluate_citation_timing(
     elif clean_pub[:comp_len] < clean_ret[:comp_len]:
         return CitationTiming.CITED_BEFORE_RETRACTION
 
-    # If prefixes match (e.g. both start with '2020'), but one is more specific,
-    # default to before retraction to prevent falsely accusing authors without full day proof
-    return CitationTiming.CITED_BEFORE_RETRACTION
+    # If prefixes match (e.g. both start with '2020') but one or both lack specific month/day,
+    # the timing is indeterminate — return UNKNOWN rather than asserting unproven fact.
+    return CitationTiming.UNKNOWN

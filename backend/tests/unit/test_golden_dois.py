@@ -163,8 +163,8 @@ def test_golden_dois_citation_timing():
     # Case D: Partial year comparison
     assert evaluate_citation_timing("2021", "2020-06-05") == CitationTiming.CITED_AFTER_RETRACTION
     assert evaluate_citation_timing("2019", "2020-06-05") == CitationTiming.CITED_BEFORE_RETRACTION
-    # Shared prefix (both 2020) without full day proof defaults to conservative BEFORE
-    assert evaluate_citation_timing("2020", "2020-06-05") == CitationTiming.CITED_BEFORE_RETRACTION
+    # Shared prefix (both 2020) without full day proof is indeterminate -> UNKNOWN
+    assert evaluate_citation_timing("2020", "2020-06-05") == CitationTiming.UNKNOWN
 
 
 def test_wakefield_dual_retraction_boundary_case(tmp_path: Path):

@@ -132,9 +132,16 @@ def match_reference(
     candidate_title: str,
     candidate_year: int | str | None = None,
     candidate_journal: str | None = None,
+    candidate_is_flagged: bool = False,
 ) -> dict[str, Any]:
     """
     Score the match quality between an unstructured reference string and a candidate record.
+
+    Ethical Invariant:
+        If `candidate_is_flagged` is True (the candidate paper is retracted or has an
+        Expression of Concern), this function will NEVER auto-match (needs_human_verification
+        is forced to True for any non-trivial match >= 0.40). A false auto-match pointing
+        to a retracted paper would publicly discredit the citing paper without human oversight.
 
     Returns:
         dict with confidence, title_similarity, year_match, journal_match,
@@ -164,8 +171,11 @@ def match_reference(
             pass
 
     year_match = False
+    conflicting_year = False
     if cand_year_int and cand_year_int in raw_years:
         year_match = True
+    elif raw_years and cand_year_int and (cand_year_int not in raw_years):
+        conflicting_year = True
 
     # Journal checking
     journal_match = False
@@ -179,18 +189,28 @@ def match_reference(
     score = title_similarity * 0.70
     if year_match:
         score += 0.20
-    elif raw_years and cand_year_int and not year_match:
-        # Conflicting year detected: penalize
-        score -= 0.15
+    elif conflicting_year:
+        # Decisive conflicting year penalty
+        score -= 0.25
 
     if journal_match:
         score += 0.10
 
+    # Ensure score is clamped between 0.0 and 1.0
     confidence = round(max(0.0, min(1.0, score)), 3)
 
-    # Human verification rule (per REVIEW_SYSTEM.md):
-    # Needs human check if ambiguous (between 0.60 and 0.95 confidence)
-    needs_human = 0.60 <= confidence < 0.95
+    # If conflicting year, clamp max confidence to 0.65 so it cannot auto-match
+    if conflicting_year:
+        confidence = min(0.65, confidence)
+
+    # Human verification rule:
+    # 1. Any match to a retracted paper or EOC (candidate_is_flagged) with confidence >= 0.40
+    #    MUST be routed to human review, never auto-matched.
+    # 2. Standard ambiguity range: 0.60 <= confidence < 0.95
+    if candidate_is_flagged:
+        needs_human = confidence >= 0.40
+    else:
+        needs_human = 0.60 <= confidence < 0.95
 
     return {
         "confidence": confidence,

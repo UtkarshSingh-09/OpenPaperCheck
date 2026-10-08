@@ -28,6 +28,17 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+def hash_ip(ip: str | None) -> str | None:
+    """
+    Hash IP address with SESSION_SECRET_KEY salt to prevent rainbow-table inversion
+    over the small IPv4 address space (~4.3 billion possible IPs).
+    """
+    if not ip:
+        return None
+    salt = settings.SESSION_SECRET_KEY
+    return hashlib.sha256(f"{salt}:{ip.strip()}".encode()).hexdigest()
+
+
 def create_user_session(
     db: DBSession,
     user_id: str,
@@ -42,7 +53,7 @@ def create_user_session(
     token_hash = hash_token(raw_token)
     expires_at = utcnow() + timedelta(hours=settings.SESSION_EXPIRE_HOURS)
 
-    ip_hash = hash_token(ip) if ip else None
+    ip_hash = hash_ip(ip)
     ua_hash = hash_token(user_agent) if user_agent else None
 
     session_record = Session(
